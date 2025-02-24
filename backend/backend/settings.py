@@ -138,3 +138,8 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+LINKEDIN_API_KEY = "tu_api_key"
+LINKEDIN_SECRET = "tu_secret_key"
+OCC_API_KEY = "tu_occ_api_key"

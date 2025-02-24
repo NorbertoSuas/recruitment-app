@@ -2,6 +2,14 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets, filters
 from .models import Candidate
 from .serializers import CandidateSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.views import APIView
+import PyPDF2
+import docx
+from rest_framework.decorators import api_view
+from django.db.models import Q
+import requests
+from django.conf import settings
 
 class CandidateViewSet(viewsets.ModelViewSet):
     queryset = Candidate.objects.all()
@@ -33,3 +41,84 @@ class CandidateViewSet(viewsets.ModelViewSet):
         # Si no existe, llama al método original para crearlo
         return super().create(request, *args, **kwargs)
 
+
+
+class CandidateUploadView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get('resume')
+        if not file:
+            return Response({"error": "No file uploaded"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extraer texto del archivo
+        text = self.extract_text(file)
+
+        # Crear candidato con datos extraídos
+        candidate = Candidate.objects.create(
+            name=request.data.get('name', 'Desconocido'),
+            email=request.data.get('email', 'unknown@example.com'),
+            phone=request.data.get('phone', ''),
+            skills=text,
+            resume=file
+        )
+
+        return Response(CandidateSerializer(candidate).data, status=status.HTTP_201_CREATED)
+
+    def extract_text(self, file):
+        """Extrae texto de un archivo PDF o Word"""
+        if file.name.endswith('.pdf'):
+            return self.extract_text_from_pdf(file)
+        elif file.name.endswith('.docx'):
+            return self.extract_text_from_docx(file)
+        return "Formato no soportado"
+
+    def extract_text_from_pdf(self, file):
+        reader = PyPDF2.PdfReader(file)
+        text = ""
+        for page in reader.pages:
+            text += page.extract_text() + "\n"
+        return text
+
+    def extract_text_from_docx(self, file):
+        doc = docx.Document(file)
+        return "\n".join([para.text for para in doc.paragraphs])
+
+
+
+@api_view(['GET'])
+def filter_candidates(request):
+    skills = request.query_params.get('skills', '')  # Habilidades a buscar
+    if not skills:
+        return Response({"error": "Debes proporcionar habilidades a filtrar"}, status=400)
+
+    skill_list = skills.split(',')  # Convertimos la cadena en lista
+
+    # Filtramos candidatos que contengan alguna de las habilidades
+    candidates = Candidate.objects.filter(
+        Q(skills__icontains=skill_list[0]) |
+        Q(skills__icontains=skill_list[1]) |
+        Q(skills__icontains=skill_list[2])  # Puedes ajustar según la cantidad de skills esperada
+    )
+
+    return Response(CandidateSerializer(candidates, many=True).data)
+
+
+
+
+
+@api_view(['GET'])
+def search_linkedin_profiles(request):
+    query = request.query_params.get('query', '')
+    if not query:
+        return Response({"error": "Debes proporcionar un término de búsqueda"}, status=400)
+
+    url = f"https://api.linkedin.com/v2/people-search?q={query}"
+    headers = {"Authorization": f"Bearer {settings.LINKEDIN_API_KEY}"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return Response(response.json())
+    else:
+        return Response({"error": "Error al consultar LinkedIn"}, status=response.status_code)
