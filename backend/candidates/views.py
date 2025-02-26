@@ -122,3 +122,52 @@ def search_linkedin_profiles(request):
         return Response(response.json())
     else:
         return Response({"error": "Error al consultar LinkedIn"}, status=response.status_code)
+    
+    
+    
+@api_view(['GET'])
+def search_occ_profiles(request):
+    query = request.query_params.get('query', '')
+    if not query:
+        return Response({"error": "Debes proporcionar un término de búsqueda"}, status=400)
+
+    url = f"https://api.occ.com.mx/v1/search?q={query}"
+    headers = {"Authorization": f"Bearer {settings.OCC_API_KEY}"}
+
+    response = requests.get(url, headers=headers)
+
+    if response.status_code == 200:
+        return Response(response.json())
+    else:
+        return Response({"error": "Error al consultar OCC"}, status=response.status_code)
+
+@api_view(['POST'])
+def post_linkedin_job(request):
+    access_token = settings.LINKEDIN_API_KEY
+    organization_id = "tu_organization_id"  # ID de la empresa que publica la vacante
+
+    job_data = {
+        "company": f"urn:li:organization:{organization_id}",
+        "title": request.data.get("title"),
+        "description": request.data.get("description"),
+        "location": request.data.get("location"),
+        "employmentType": request.data.get("employment_type", "FULL_TIME"),
+        "applyMethod": {
+            "com.linkedin.jobs.OffsiteApply": {
+                "companyApplyUrl": request.data.get("apply_url")
+            }
+        }
+    }
+
+    url = "https://api.linkedin.com/v2/jobPostings"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, json=job_data, headers=headers)
+
+    if response.status_code == 201:
+        return Response({"message": "Vacante publicada en LinkedIn"}, status=201)
+    else:
+        return Response({"error": "Error al publicar la vacante", "details": response.json()}, status=response.status_code)
