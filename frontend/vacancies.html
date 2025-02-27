@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Vacancies - Innovation Meetup</title>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="candidates.html">Candidates</a></li>
+                <li><a href="vacancies.html">Vacancies</a></li>
+                <li><a href="settings.html">Settings</a></li>
+                <li><a href="innovation.html">Innovation Meetup</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="header">
+                <h1>Job Vacancies</h1>
+            </div>
+            <div class="main-content">
+                <div class="vacancies-list">
+                    <h2>Available Positions</h2>
+                    <div id="vacancies-container">
+                        <!-- Vacancies will be loaded here -->
+                    </div>
+                    <button onclick="loadVacancies()">Load Vacancies</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function loadVacancies() {
+            try {
+                const response = await fetch('http://localhost:3000/api/vacancies');
+                const vacancies = await response.json();
+                const container = document.getElementById('vacancies-container');
+                
+                container.innerHTML = vacancies.map(vacancy => `
+                    <div class="vacancy-card">
+                        <h3>${vacancy.title || 'No title'}</h3>
+                        <p>Department: ${vacancy.department || 'Not specified'}</p>
+                        <p>Description: ${vacancy.description || 'No description'}</p>
+                        <p>Status: ${vacancy.status || 'Active'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading vacancies:', error);
+                document.getElementById('vacancies-container').innerHTML = 
+                    '<p class="error">Error loading vacancies. Please try again.</p>';
+            }
+        }
+    </script>
+</body>
+</html> 

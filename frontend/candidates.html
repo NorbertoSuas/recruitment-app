@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Candidates - Innovation Meetup</title>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2>Menu</h2>
+            <ul>
+                <li><a href="index.html">Dashboard</a></li>
+                <li><a href="candidates.html">Candidates</a></li>
+                <li><a href="vacancies.html">Vacancies</a></li>
+                <li><a href="settings.html">Settings</a></li>
+                <li><a href="innovation.html">Innovation Meetup</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="header">
+                <h1>Candidates Management</h1>
+            </div>
+            <div class="main-content">
+                <div class="candidates-list">
+                    <h2>Registered Candidates</h2>
+                    <div id="candidates-container">
+                        <!-- Candidates will be loaded here -->
+                    </div>
+                    <button onclick="loadCandidates()">Load Candidates</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function loadCandidates() {
+            try {
+                const response = await fetch('http://localhost:5500/api/candidates');
+                const candidates = await response.json();
+                const container = document.getElementById('candidates-container');
+                
+                container.innerHTML = candidates.map(candidate => `
+                    <div class="candidate-card">
+                        <h3>${candidate.nombre || 'No name'}</h3>
+                        <p>Email: ${candidate.correo || 'No email'}</p>
+                        <p>Position: ${candidate.puesto || 'No position'}</p>
+                        <p>Status: ${candidate.estado || 'Pending'}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+                document.getElementById('candidates-container').innerHTML = 
+                    '<p class="error">Error loading candidates. Please try again.</p>';
+            }
+        }
+    </script>
+</body>
+</html> 
