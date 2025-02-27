@@ -7,42 +7,67 @@ const app = express();
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
-// Update these credentials to match your MySQL setup
+// MySQL connection config
 const db = mysql.createConnection({
-    host: '127.0.0.1:3306',
+    host: '127.0.0.1',
+    port: 3306,
     user: 'root',
     password: '3088780Nsh.',
-    database: 'candidatos'  // Make sure this matches your database name
+    database: 'candidatos'
 });
 
-
-
+// Connection error handling
 db.connect(err => {
     if (err) {
-        console.error('Database connection failed:', err.stack);
+        console.error('Database connection failed:', err);
+        console.error('Error code:', err.code);
+        console.error('Error message:', err.message);
         return;
     }
-    console.log('Connected to database.');
+    console.log('Connected to database successfully.');
 });
 
-// Update the query to match your candidates table structure
+// API Routes - Must come BEFORE the catch-all route
 app.get('/api/candidates', (req, res) => {
-    const query = 'SELECT * FROM candidatos';  // Update table name if different
+    console.log('Attempting to fetch candidates...');
+    const query = 'SELECT * FROM candidates_candidate';
+    
     db.query(query, (err, results) => {
         if (err) {
-            console.error('Error fetching candidates:', err);
-            return res.status(500).json({ error: 'Error fetching candidates' });
+            console.error('Database query error:', err);
+            console.error('Query:', query);
+            return res.status(500).json({ 
+                error: 'Error fetching candidates',
+                details: err.message 
+            });
         }
+        console.log('Successfully fetched candidates:', results);
         res.json(results);
     });
 });
 
+// Error handler
+app.use((err, req, res, next) => {
+    console.error('Express error:', err);
+    res.status(500).json({ error: 'Server error', details: err.message });
+});
+
+// Catch-all route - Must come AFTER API routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-const PORT = process.env.PORT || 5500;  // Changed port to 5500
+const PORT = process.env.PORT || 5500;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to view the website`);
+});
+
+// Handle process errors
+process.on('unhandledRejection', (err) => {
+    console.error('Unhandled rejection:', err);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught exception:', err);
 }); 
