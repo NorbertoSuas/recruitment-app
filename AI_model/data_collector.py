@@ -1,7 +1,6 @@
 import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
-import requests
 from model_config import DATA_SOURCES
 
 class DataCollector:

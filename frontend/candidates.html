@@ -37,7 +37,7 @@
         async function loadCandidates() {
             try {
                 console.log('Attempting to fetch candidates...');
-                const response = await fetch('http://localhost:5500/api/candidates', {
+                const response = await fetch('http://127.0.0.1:8000/api/candidates', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json'

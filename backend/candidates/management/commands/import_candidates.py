@@ -9,10 +9,10 @@ class Command(BaseCommand):
     help = 'Import candidates from CSV file'
 
     def add_arguments(self, parser):
-        parser.add_argument('C:\Users\Norbe\OneDrive - Universidad Tecmilenio\Desktop\Innovation meetup\IT_CV_Dataset.csv', type=str, help='Path to the CSV file')
+        parser.add_argument('C:/Users/Norbe/OneDrive - Universidad Tecmilenio/Desktop/Innovation meetup/IT_CV_Dataset.csv', type=str, help='Path to the CSV file')
 
     def handle(self, *args, **options):
-        csv_file_path = options['C:\Users\Norbe\OneDrive - Universidad Tecmilenio\Desktop\Innovation meetup\IT_CV_Dataset.csv']
+        csv_file_path = options['C:/Users/Norbe/OneDrive - Universidad Tecmilenio/Desktop/Innovation meetup/IT_CV_Dataset.csv']
         
         try:
             df = pd.read_csv(csv_file_path)
@@ -33,11 +33,11 @@ class Command(BaseCommand):
                     )
                     candidate.save()
                     self.stdout.write(
-                        self.style.success(f'Successfully imported candidate: {candidate.email}')
+                        self.style.HTTP_SUCCESS(f'Successfully imported candidate: {candidate.email}')
                     )
                 except Exception as e:
                     self.stdout.write(
-                        self.style.error(f'Error importing candidate: {str(e)}')
+                        self.style.WARNING(f'Error importing candidate: {str(e)}')
                     )
                     continue
 
