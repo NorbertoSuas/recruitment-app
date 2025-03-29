@@ -34,27 +34,66 @@
         </div>
     </div>
     <script>
-        async function loadCandidates() {
+        // Function to check server health
+        async function checkServerHealth() {
             try {
+                const response = await fetch('http://localhost:8000/api/health');
+                const health = await response.json();
+                return health.mongodb === 'connected';
+            } catch (error) {
+                console.error('Health check failed:', error);
+                return false;
+            }
+        }
+
+        // Function to format date
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        async function loadCandidates() {
+            const container = document.getElementById('candidates-container');
+            container.innerHTML = '<p>Loading candidates...</p>';
+            
+            try {
+                // Check server health first
+                const isHealthy = await checkServerHealth();
+                if (!isHealthy) {
+                    throw new Error('Database connection is not available. Please check if MongoDB is running.');
+                }
+
                 console.log('Attempting to fetch candidates...');
-                const response = await fetch('http://127.0.0.1:8000/api/candidates', {
+                const response = await fetch('http://localhost:8000/api/candidates', {
                     method: 'GET',
                     headers: {
-                        'Accept': 'application/json'
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(
+                        errorData.details || 
+                        `HTTP error! status: ${response.status} - ${response.statusText}`
+                    );
                 }
                 
                 const candidates = await response.json();
-                console.log('Received candidates:', candidates);
-                
-                const container = document.getElementById('candidates-container');
+                console.log(`Received ${candidates.length} candidates`);
                 
                 if (!candidates || candidates.length === 0) {
-                    container.innerHTML = '<p class="error">No candidates found in database.</p>';
+                    container.innerHTML = `
+                        <div class="error-container">
+                            <p class="info">No candidates found in database.</p>
+                            <p>The database is connected but no candidates are registered yet.</p>
+                            <button onclick="loadCandidates()">Refresh</button>
+                        </div>
+                    `;
                     return;
                 }
                 
@@ -63,20 +102,41 @@
                         <h3>${candidate.first_name} ${candidate.last_name}</h3>
                         <p>Email: ${candidate.email}</p>
                         <p>Phone: ${candidate.phone || 'Not provided'}</p>
-                        <p>LinkedIn: ${candidate.linkedin || 'Not provided'}</p>
+                        <p>LinkedIn: ${candidate.linkedin ? `<a href="${candidate.linkedin}" target="_blank">Profile</a>` : 'Not provided'}</p>
                         <p>Experience: ${candidate.experience || 'Not provided'}</p>
                         <p>Education: ${candidate.education || 'Not provided'}</p>
                         <p>Location: ${candidate.location || 'Not provided'}</p>
                         <p>Skills: ${candidate.skills || 'Not provided'}</p>
                         <p>Status: ${candidate.status || 'Pending'}</p>
+                        <p>Applied: ${formatDate(candidate.applied_at)}</p>
+                        ${candidate.resume ? `<p><a href="http://localhost:8000/${candidate.resume}" target="_blank">View Resume</a></p>` : ''}
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Error details:', error);
-                document.getElementById('candidates-container').innerHTML = 
-                    `<p class="error">Error loading candidates: ${error.message}</p>`;
+                console.error('Error fetching candidates:', error);
+                container.innerHTML = `
+                    <div class="error-container">
+                        <p class="error">Error loading candidates: ${error.message}</p>
+                        <p>Please check:</p>
+                        <ul>
+                            <li>MongoDB is installed and running
+                                <ul>
+                                    <li>Download MongoDB Community Server if not installed</li>
+                                    <li>Make sure MongoDB service is running</li>
+                                    <li>Try opening MongoDB Compass to verify connection</li>
+                                </ul>
+                            </li>
+                            <li>Backend server is running on port 8000</li>
+                            <li>Network connection is stable</li>
+                        </ul>
+                        <button onclick="loadCandidates()">Try Again</button>
+                    </div>
+                `;
             }
         }
+
+        // Load candidates when the page loads
+        document.addEventListener('DOMContentLoaded', loadCandidates);
     </script>
 </body>
 </html> 

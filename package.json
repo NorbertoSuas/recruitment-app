@@ -4,8 +4,11 @@
     "description": "Innovation Meetup Project",
     "main": "server.js",
     "dependencies": {
-        "express": "^4.17.1",
+        "cors": "^2.8.5",
+        "express": "^4.21.2",
+        "mongodb": "^6.15.0",
+        "mongoose": "^8.13.1",
         "mysql": "^2.18.1",
-        "cors": "^2.8.5"
+        "pdf-lib": "^1.17.1"
     }
-} 
+}
