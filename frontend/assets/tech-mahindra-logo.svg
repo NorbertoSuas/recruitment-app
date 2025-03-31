@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="300" height="100" viewBox="0 0 300 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <g>
+        <!-- TECH text -->
+        <text x="20" y="50" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#666666">TECH</text>
+        
+        <!-- mahindra text -->
+        <text x="20" y="90" font-family="Arial, sans-serif" font-size="50" font-weight="bold" fill="#E31837">mahindra</text>
+    </g>
+</svg> 

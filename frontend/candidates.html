@@ -3,140 +3,547 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./styles.css">
-    <title>Candidates - Innovation Meetup</title>
+    <title>Tech Mahindra HR Portal - Candidates</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
+    <!-- Sidebar -->
         <div class="sidebar">
-            <h2>Menu</h2>
-            <ul>
-                <li><a href="index.html">Dashboard</a></li>
-                <li><a href="candidates.html">Candidates</a></li>
-                <li><a href="vacancies.html">Vacancies</a></li>
-                <li><a href="settings.html">Settings</a></li>
-                <li><a href="innovation.html">Innovation Meetup</a></li>
-            </ul>
+        <div class="sidebar-logo">
+            <img src="assets/tech-mahindra-logo.svg" alt="Tech Mahindra">
         </div>
-        <div class="content">
-            <div class="header">
-                <h1>Candidates Management</h1>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="index.html">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="vacancies.html">
+                    <i class="bi bi-briefcase"></i>
+                    Vacancies
+                </a>
+            </li>
+            <li>
+                <a href="candidates.html" class="active">
+                    <i class="bi bi-people"></i>
+                    Candidates
+                </a>
+            </li>
+            <li>
+                <a href="settings.html">
+                    <i class="bi bi-gear"></i>
+                    Settings
+                </a>
+            </li>
+            </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="section-title">Candidates</h1>
+            <button class="btn btn-primary" id="toggleCandidateForm">
+                <i class="bi bi-person-plus me-2"></i>Add Candidate
+            </button>
+        </div>
+
+        <!-- Candidate Form -->
+        <div class="tm-card mb-4" id="candidateForm" style="display: none;">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-person-plus me-2"></i>
+                    Add New Candidate
+                </h5>
             </div>
-            <div class="main-content">
-                <div class="candidates-list">
-                    <h2>Registered Candidates</h2>
-                    <div id="candidates-container">
-                        <!-- Candidates will be loaded here -->
+            <div class="card-body">
+                <form id="newCandidateForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="firstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="lastName" required>
+                        </div>
                     </div>
-                    <button onclick="loadCandidates()">Load Candidates</button>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" name="phone" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" name="location" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Education</label>
+                            <input type="text" class="form-control" name="education" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Current Position</label>
+                        <input type="text" class="form-control" name="currentPosition">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Experience (Years)</label>
+                        <input type="number" class="form-control" name="experience" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Skills (comma-separated)</label>
+                        <input type="text" class="form-control" name="skills" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Applied For</label>
+                        <select class="form-select" name="vacancy" required>
+                            <option value="">Select position</option>
+                            <option value="Senior Software Engineer">Senior Software Engineer</option>
+                            <option value="Product Manager">Product Manager</option>
+                            <option value="UX Designer">UX Designer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Resume</label>
+                        <input type="file" class="form-control" name="resume" accept=".pdf,.doc,.docx">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" name="notes" rows="3"></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save me-2"></i>Save Candidate
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="cancelCandidateForm">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Candidates List -->
+        <div class="tm-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-list-ul me-2"></i>
+                    Registered Candidates
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="candidatesList" class="row g-4">
+                    <!-- Candidates will be loaded here dynamically -->
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Candidate Details Modal -->
+    <div class="modal fade" id="candidateDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Candidate Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Personal Information</h6>
+                            <p><strong>Name:</strong> <span id="candidateName"></span></p>
+                            <p><strong>Email:</strong> <span id="candidateEmail"></span></p>
+                            <p><strong>Phone:</strong> <span id="candidatePhone"></span></p>
+                            <p><strong>Location:</strong> <span id="candidateLocation"></span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Professional Information</h6>
+                            <p><strong>Current Position:</strong> <span id="candidatePosition"></span></p>
+                            <p><strong>Experience:</strong> <span id="candidateExperience"></span></p>
+                            <p><strong>Education:</strong> <span id="candidateEducation"></span></p>
+                            <p><strong>LinkedIn:</strong> <a id="candidateLinkedIn" href="#" target="_blank"></a></p>
+                            <p><strong>Applied For:</strong> <span id="candidateAppliedFor"></span></p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Skills</h6>
+                            <div id="candidateSkills" class="mb-3"></div>
+                            <h6>Resume</h6>
+                            <div id="candidateResume" class="mb-3">
+                                <a href="#" class="btn btn-sm btn-primary" target="_blank">
+                                    <i class="bi bi-file-earmark-text me-1"></i>View Resume
+                                </a>
+                            </div>
+                            <h6>Application Status</h6>
+                            <div class="d-flex align-items-center gap-2">
+                                <select id="candidateStatus" class="form-select w-auto">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Interviewed">Interviewed</option>
+                                    <option value="Accepted">Accepted</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                                <button class="btn btn-primary btn-sm" onclick="updateCandidateStatus()">
+                                    Update Status
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Function to check server health
-        async function checkServerHealth() {
+        // Toggle candidate form
+        document.getElementById('toggleCandidateForm').addEventListener('click', () => {
+            const form = document.getElementById('candidateForm');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+            loadVacancies(); // Load vacancies for the select dropdown
+        });
+
+        document.getElementById('cancelCandidateForm').addEventListener('click', () => {
+            document.getElementById('candidateForm').style.display = 'none';
+            document.getElementById('newCandidateForm').reset();
+        });
+
+        // Load vacancies for the select dropdown
+        async function loadVacancies() {
             try {
-                const response = await fetch('http://localhost:8000/api/health');
-                const health = await response.json();
-                return health.mongodb === 'connected';
+                const response = await fetch('http://localhost:3000/api/vacancies');
+                if (response.ok) {
+                    const vacancies = await response.json();
+                    const select = document.querySelector('select[name="vacancy"]');
+                    select.innerHTML = '<option value="">Select position</option>';
+                    vacancies.forEach(vacancy => {
+                        const option = document.createElement('option');
+                        option.value = vacancy._id;
+                        option.textContent = vacancy.title;
+                        select.appendChild(option);
+                    });
+                }
             } catch (error) {
-                console.error('Health check failed:', error);
-                return false;
+                console.error('Error loading vacancies:', error);
             }
         }
 
-        // Function to format date
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+        // Handle form submission
+        document.getElementById('newCandidateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const candidate = {
+                first_name: formData.get('firstName'),
+                last_name: formData.get('lastName'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                location: formData.get('location'),
+                education: formData.get('education'),
+                current_position: formData.get('currentPosition'),
+                experience: formData.get('experience'),
+                skills: formData.get('skills'),
+                vacancy: formData.get('vacancy'),
+                status: 'Pending'
+            };
+
+            // Handle resume file
+            const resumeFile = formData.get('resume');
+            if (resumeFile && resumeFile.size > 0) {
+                const resumeFormData = new FormData();
+                resumeFormData.append('resume', resumeFile);
+                
+                try {
+                    const uploadResponse = await fetch('http://localhost:3000/api/upload-resume', {
+                        method: 'POST',
+                        body: resumeFormData
+                    });
+                    
+                    if (uploadResponse.ok) {
+                        const { filename } = await uploadResponse.json();
+                        candidate.resume = filename;
+                    } else {
+                        throw new Error('Failed to upload resume');
+                    }
+                } catch (error) {
+                    console.error('Error uploading resume:', error);
+                    alert('Error uploading resume');
+                    return;
+                }
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/candidates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(candidate)
+                });
+
+                if (response.ok) {
+                    alert('Candidate added successfully!');
+                    document.getElementById('candidateForm').style.display = 'none';
+                    document.getElementById('newCandidateForm').reset();
+                    loadCandidates();
+                } else {
+                    throw new Error('Failed to add candidate');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error adding candidate');
+            }
+        });
+
+        // Load and display candidates
+        async function loadCandidates() {
+            try {
+                const [candidatesResponse, vacanciesResponse] = await Promise.all([
+                    fetch('http://localhost:3000/api/candidates'),
+                    fetch('http://localhost:3000/api/vacancies')
+                ]);
+
+                if (candidatesResponse.ok && vacanciesResponse.ok) {
+                    const candidates = await candidatesResponse.json();
+                    const vacancies = await vacanciesResponse.json();
+                    
+                    // Check and assign vacancies to candidates who don't have one
+                    for (const candidate of candidates) {
+                        if (!candidate.applied_for) {
+                            // Find a suitable vacancy based on candidate's skills
+                            const suitableVacancy = findSuitableVacancy(candidate, vacancies);
+                            if (suitableVacancy) {
+                                await assignVacancyToCandidate(candidate._id, suitableVacancy._id);
+                                candidate.applied_for = suitableVacancy._id;
+                                candidate.applied_for_title = suitableVacancy.title;
+                            }
+                        }
+                    }
+
+                    const candidatesList = document.getElementById('candidatesList');
+                    
+                    candidatesList.innerHTML = candidates.map(candidate => `
+                        <div class="col-md-6">
+                            <div class="card candidate-card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">${candidate.first_name} ${candidate.last_name}</h5>
+                                    <p class="text-muted mb-2">${candidate.current_position || 'No current position'}</p>
+                                    
+                                    <div class="candidate-info mb-3">
+                                        <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
+                                        <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
+                                        <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
+                                        <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
+                                        <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
+                                        <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
+                                        ${candidate.linkedin ? `
+                                        <p><i class="bi bi-linkedin me-2"></i><a href="${candidate.linkedin}" target="_blank" class="text-primary">LinkedIn Profile</a></p>
+                                        ` : ''}
+                                        <p><i class="bi bi-building me-2"></i>Source: ${candidate.source}</p>
+                                    </div>
+
+                                    <div class="skills-section mb-3">
+                                        <h6 class="mb-2">Skills</h6>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            ${candidate.skills.split(',').map(skill => 
+                                                `<span class="badge bg-secondary">${skill.trim()}</span>`
+                                            ).join('')}
+                                        </div>
+                                    </div>
+
+                                    <div class="status-section mb-3">
+                                        <span class="badge bg-${getStatusColor(candidate.status)} px-3 py-2">
+                                            ${candidate.status}
+                                        </span>
+                                    </div>
+
+                                    <div class="action-buttons">
+                                        ${candidate.resume ? `
+                                            <a href="/resumes/${candidate.resume}" class="btn btn-sm btn-info w-100" target="_blank">
+                                                <i class="bi bi-file-earmark-text me-1"></i>View Resume
+                                            </a>
+                                        ` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+            }
         }
 
-        async function loadCandidates() {
-            const container = document.getElementById('candidates-container');
-            container.innerHTML = '<p>Loading candidates...</p>';
+        // Helper function to find a suitable vacancy based on candidate's skills
+        function findSuitableVacancy(candidate, vacancies) {
+            const candidateSkills = candidate.skills.toLowerCase().split(',').map(s => s.trim());
             
-            try {
-                // Check server health first
-                const isHealthy = await checkServerHealth();
-                if (!isHealthy) {
-                    throw new Error('Database connection is not available. Please check if MongoDB is running.');
-                }
+            // Sort vacancies by matching skills
+            const rankedVacancies = vacancies.map(vacancy => {
+                const vacancySkills = vacancy.skills_required.map(s => s.toLowerCase());
+                const matchingSkills = candidateSkills.filter(skill => 
+                    vacancySkills.some(vs => vs.includes(skill) || skill.includes(vs))
+                ).length;
+                return { vacancy, matchScore: matchingSkills };
+            }).sort((a, b) => b.matchScore - a.matchScore);
 
-                console.log('Attempting to fetch candidates...');
-                const response = await fetch('http://localhost:8000/api/candidates', {
-                    method: 'GET',
+            return rankedVacancies[0]?.vacancy;
+        }
+
+        // Helper function to assign a vacancy to a candidate
+        async function assignVacancyToCandidate(candidateId, vacancyId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/candidates/${candidateId}/assign-vacancy`, {
+                    method: 'PUT',
                     headers: {
-                        'Accept': 'application/json',
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({ vacancyId })
                 });
                 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(
-                        errorData.details || 
-                        `HTTP error! status: ${response.status} - ${response.statusText}`
-                    );
+                    throw new Error('Failed to assign vacancy');
                 }
-                
-                const candidates = await response.json();
-                console.log(`Received ${candidates.length} candidates`);
-                
-                if (!candidates || candidates.length === 0) {
-                    container.innerHTML = `
-                        <div class="error-container">
-                            <p class="info">No candidates found in database.</p>
-                            <p>The database is connected but no candidates are registered yet.</p>
-                            <button onclick="loadCandidates()">Refresh</button>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                container.innerHTML = candidates.map(candidate => `
-                    <div class="candidate-card">
-                        <h3>${candidate.first_name} ${candidate.last_name}</h3>
-                        <p>Email: ${candidate.email}</p>
-                        <p>Phone: ${candidate.phone || 'Not provided'}</p>
-                        <p>LinkedIn: ${candidate.linkedin ? `<a href="${candidate.linkedin}" target="_blank">Profile</a>` : 'Not provided'}</p>
-                        <p>Experience: ${candidate.experience || 'Not provided'}</p>
-                        <p>Education: ${candidate.education || 'Not provided'}</p>
-                        <p>Location: ${candidate.location || 'Not provided'}</p>
-                        <p>Skills: ${candidate.skills || 'Not provided'}</p>
-                        <p>Status: ${candidate.status || 'Pending'}</p>
-                        <p>Applied: ${formatDate(candidate.applied_at)}</p>
-                        ${candidate.resume ? `<p><a href="http://localhost:8000/${candidate.resume}" target="_blank">View Resume</a></p>` : ''}
-                    </div>
-                `).join('');
             } catch (error) {
-                console.error('Error fetching candidates:', error);
-                container.innerHTML = `
-                    <div class="error-container">
-                        <p class="error">Error loading candidates: ${error.message}</p>
-                        <p>Please check:</p>
-                        <ul>
-                            <li>MongoDB is installed and running
-                                <ul>
-                                    <li>Download MongoDB Community Server if not installed</li>
-                                    <li>Make sure MongoDB service is running</li>
-                                    <li>Try opening MongoDB Compass to verify connection</li>
-                                </ul>
-                            </li>
-                            <li>Backend server is running on port 8000</li>
-                            <li>Network connection is stable</li>
-                        </ul>
-                        <button onclick="loadCandidates()">Try Again</button>
-                    </div>
-                `;
+                console.error('Error assigning vacancy:', error);
             }
         }
 
-        // Load candidates when the page loads
+        // View candidate details
+        async function viewCandidateDetails(candidateId) {
+            try {
+                const response = await fetch(`http://localhost:3000/api/candidates/${candidateId}`);
+                if (response.ok) {
+                    const candidate = await response.json();
+                    
+                    // Populate modal with candidate details
+                    document.getElementById('candidateName').textContent = `${candidate.first_name} ${candidate.last_name}`;
+                    document.getElementById('candidateEmail').textContent = candidate.email;
+                    document.getElementById('candidatePhone').textContent = candidate.phone;
+                    document.getElementById('candidateLocation').textContent = candidate.location || 'N/A';
+                    document.getElementById('candidatePosition').textContent = candidate.current_position || 'N/A';
+                    document.getElementById('candidateExperience').textContent = `${candidate.experience} years`;
+                    document.getElementById('candidateEducation').textContent = candidate.education || 'N/A';
+                    document.getElementById('candidateAppliedFor').textContent = candidate.applied_for_title || 'Not assigned';
+                    
+                    const linkedInLink = document.getElementById('candidateLinkedIn');
+                    if (candidate.linkedin) {
+                        linkedInLink.href = candidate.linkedin;
+                        linkedInLink.textContent = candidate.linkedin;
+                    } else {
+                        linkedInLink.textContent = 'Not provided';
+                        linkedInLink.removeAttribute('href');
+                    }
+
+                    // Display skills as badges
+                    document.getElementById('candidateSkills').innerHTML = candidate.skills.map(skill => 
+                        `<span class="badge bg-secondary me-1">${skill}</span>`
+                    ).join('');
+
+                    // Update resume link
+                    const resumeLink = document.getElementById('candidateResume').querySelector('a');
+                    if (candidate.resume) {
+                        resumeLink.href = `/resumes/${candidate.resume}`;
+                    } else {
+                        resumeLink.style.display = 'none';
+                    }
+
+                    // Set current status
+                    document.getElementById('candidateStatus').value = candidate.status;
+                    
+                    // Show modal
+                    new bootstrap.Modal(document.getElementById('candidateDetailsModal')).show();
+                }
+            } catch (error) {
+                console.error('Error loading candidate details:', error);
+            }
+        }
+
+        // Update candidate status
+        async function updateCandidateStatus(candidateId) {
+            try {
+                const status = document.getElementById('candidateStatus').value;
+                const response = await fetch(`http://localhost:3000/api/candidates/${candidateId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status })
+                });
+
+                if (response.ok) {
+                    alert('Status updated successfully!');
+                    loadCandidates(); // Refresh the list
+                }
+            } catch (error) {
+                console.error('Error updating candidate status:', error);
+            }
+        }
+
+        // Helper function to get status color
+        function getStatusColor(status) {
+            switch(status.toLowerCase()) {
+                case 'pending': return 'warning';
+                case 'interviewed': return 'info';
+                case 'accepted': return 'success';
+                case 'rejected': return 'danger';
+                default: return 'secondary';
+            }
+        }
+
+        // Load candidates when page loads
         document.addEventListener('DOMContentLoaded', loadCandidates);
     </script>
+
+    <style>
+        .candidate-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .candidate-card .card-title {
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .candidate-info p {
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-size: 0.9rem;
+        }
+
+        .candidate-info i {
+            color: #6c757d;
+            width: 20px;
+        }
+
+        .skills-section .badge {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.5em 1em;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-buttons .btn {
+            flex: 1;
+        }
+    </style>
 </body>
 </html> 

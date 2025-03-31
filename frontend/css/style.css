@@ -1,0 +1,364 @@
+:root {
+    --sidebar-width: 250px;
+    --tm-red: #E31837;
+    --tm-gray: #666666;
+    --tm-light-gray: #f8f9fa;
+    --tm-border-color: #dee2e6;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--tm-light-gray);
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    background-color: white;
+    padding-top: 1rem;
+    z-index: 1000;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.sidebar-logo {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--tm-border-color);
+}
+
+.sidebar-logo img {
+    width: 180px;
+    height: auto;
+    max-width: 100%;
+}
+
+.sidebar-nav {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    color: var(--tm-gray);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebar-nav li a i {
+    width: 24px;
+    margin-right: 10px;
+    font-size: 1.1rem;
+}
+
+.sidebar-nav li a:hover {
+    background-color: var(--tm-light-gray);
+    color: var(--tm-red);
+}
+
+.sidebar-nav li a.active {
+    background-color: var(--tm-light-gray);
+    color: var(--tm-red);
+    border-right: 3px solid var(--tm-red);
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 2rem;
+}
+
+.section-title {
+    color: var(--tm-gray);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Card Styles */
+.tm-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--tm-border-color);
+}
+
+.tm-card .card-header {
+    background-color: white;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--tm-border-color);
+    border-radius: 10px 10px 0 0;
+}
+
+.tm-card .card-header h5 {
+    margin: 0;
+    color: var(--tm-gray);
+    font-weight: 600;
+}
+
+.tm-card .card-body {
+    padding: 1.25rem;
+}
+
+/* Form Styles */
+.form-label {
+    color: var(--tm-gray);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border-color: var(--tm-border-color);
+    padding: 0.5rem 0.75rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--tm-red);
+    box-shadow: 0 0 0 0.2rem rgba(227, 24, 55, 0.25);
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: var(--tm-red);
+    border-color: var(--tm-red);
+}
+
+.btn-primary:hover {
+    background-color: #c41530;
+    border-color: #c41530;
+}
+
+.btn-outline-primary {
+    color: var(--tm-red);
+    border-color: var(--tm-red);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--tm-red);
+    border-color: var(--tm-red);
+}
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-connected {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-not-connected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-new {
+    background-color: #cce5ff;
+    color: #004085;
+}
+
+.status-reviewing {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-interviewed {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-hired {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Vacancy Card Styles */
+.vacancy-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border: 1px solid var(--tm-border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vacancy-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.vacancy-card-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--tm-border-color);
+}
+
+.vacancy-title {
+    color: var(--tm-gray);
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.vacancy-card-body {
+    padding: 1.25rem;
+}
+
+.vacancy-card-body p {
+    margin-bottom: 0.75rem;
+    color: var(--tm-gray);
+}
+
+.vacancy-card-footer {
+    padding: 1.25rem;
+    border-top: 1px solid var(--tm-border-color);
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Skills Tags */
+.skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.skill-tag {
+    background-color: var(--tm-light-gray);
+    color: var(--tm-gray);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+}
+
+/* Candidate Avatar */
+.candidate-avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--tm-red);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    color: var(--tm-gray);
+    font-weight: 600;
+    border-bottom-width: 1px;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+    .sidebar-logo {
+        padding: 0.5rem;
+    }
+
+    .sidebar-nav li a span {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 60px;
+        padding: 1rem;
+    }
+}
+
+/* Utility Classes */
+.text-tm-red {
+    color: var(--tm-red);
+}
+
+.text-tm-gray {
+    color: var(--tm-gray);
+}
+
+.bg-tm-light {
+    background-color: var(--tm-light-gray);
+}
+
+/* Stats Icon */
+.stats-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stats-icon i {
+    font-size: 1.5rem;
+}
+
+/* Activity Styles */
+.activity-item {
+    transition: background-color 0.2s ease;
+}
+
+.activity-item:hover {
+    background-color: var(--tm-light-gray);
+}
+
+.activity-item:last-child {
+    border-bottom: none !important;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    background-color: var(--tm-light-gray);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--tm-red);
+}
+
+.activity-text {
+    color: var(--tm-gray);
+    margin-bottom: 0.25rem;
+}
+
+.activity-time {
+    color: #6c757d;
+}
+
+/* Card Title Styles */
+.card-title {
+    color: var(--tm-gray);
+    font-weight: 600;
+}
+
+.card-subtitle {
+    margin: 0;
+    font-weight: 500;
+} 

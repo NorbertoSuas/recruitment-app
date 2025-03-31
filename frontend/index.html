@@ -3,53 +3,248 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./styles.css">
-    <title>Innovation Meetup</title>
-    <style>
-        .debug {
-            border: 1px solid red;
-        }
-    </style>
+    <title>Tech Mahindra HR Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container debug">
-        <div class="sidebar debug">
-            <h2>Menu</h2>
-            <ul>
-                <li><a href="index.html">Dashboard</a></li>
-                <li><a href="candidates.html">Candidates</a></li>
-                <li><a href="vacancies.html">Vacancies</a></li>
-                <li><a href="settings.html">Settings</a></li>
-                <li><a href="innovation.html">Innovation Meetup</a></li>
-            </ul>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/tech-mahindra-logo.svg" alt="Tech Mahindra">
         </div>
-        <div class="content debug">
-            <div class="header debug">
-                <h1>Área de TI</h1>
-            </div>
-            <div class="main-content debug">
-                <div class="charts debug">
-                    <div class="bar-chart debug">
-                        <!-- Placeholder for bar chart -->
-                    </div>
-                    <div class="pie-chart debug">
-                        <!-- Placeholder for pie chart -->
+        <ul class="sidebar-nav">
+            <li>
+                <a href="index.html" class="active">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="vacancies.html">
+                    <i class="bi bi-briefcase"></i>
+                    Vacancies
+                </a>
+            </li>
+            <li>
+                <a href="candidates.html">
+                    <i class="bi bi-people"></i>
+                    Candidates
+                </a>
+            </li>
+            <li>
+                <a href="settings.html">
+                    <i class="bi bi-gear"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="section-title">Dashboard</h1>
+
+        <!-- Stats Overview -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="tm-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="stats-icon bg-tm-light text-tm-red">
+                                <i class="bi bi-briefcase"></i>
+                            </div>
+                            <h6 class="card-subtitle ms-3 text-muted">Active Vacancies</h6>
+                        </div>
+                        <h2 class="card-title mb-0" id="activeVacanciesCount">0</h2>
                     </div>
                 </div>
-                <div class="info debug">
-                    <div class="info-item debug">
-                        <span>78 Candidatos</span>
+            </div>
+            <div class="col-md-4">
+                <div class="tm-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="stats-icon bg-tm-light text-tm-red">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h6 class="card-subtitle ms-3 text-muted">Total Candidates</h6>
+                        </div>
+                        <h2 class="card-title mb-0" id="totalCandidatesCount">0</h2>
                     </div>
-                    <div class="info-item debug">
-                        <span>22 Vacantes</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="tm-card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="stats-icon bg-tm-light text-tm-red">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+                            <h6 class="card-subtitle ms-3 text-muted">Recent & Upcoming Applications</h6>
+                        </div>
+                        <h2 class="card-title mb-0" id="newApplicationsCount">0</h2>
                     </div>
-                    <div class="info-item debug">
-                        <span>72% Coincidencia</span>
-                    </div>
-                    <a href="#" class="adjust-link">Ajustar criterios de búsqueda</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="tm-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-clock-history me-2"></i>
+                    Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="recentActivity">
+                    <!-- Activity items will be loaded here -->
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Load dashboard data
+        async function loadDashboardStats() {
+            try {
+                // Get active vacancies count
+                const vacanciesResponse = await fetch('http://localhost:3000/api/vacancies');
+                const vacancies = await vacanciesResponse.json();
+                const activeVacancies = vacancies.length;
+
+                // Get candidates count and new/upcoming applications
+                const candidatesResponse = await fetch('http://localhost:3000/api/candidates');
+                const candidates = await candidatesResponse.json();
+                const totalCandidates = candidates.length;
+                
+                const now = new Date();
+                const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+                const sevenDaysAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+                const recentAndUpcomingApplications = candidates.filter(candidate => {
+                    const appliedDate = new Date(candidate.applied_at);
+                    return appliedDate >= sevenDaysAgo && appliedDate <= sevenDaysAhead;
+                }).length;
+
+                // Update the dashboard
+                document.getElementById('activeVacanciesCount').textContent = activeVacancies;
+                document.getElementById('totalCandidatesCount').textContent = totalCandidates;
+                document.getElementById('newApplicationsCount').textContent = recentAndUpcomingApplications;
+
+                // Update the card titles to match the new metrics
+                document.querySelector('.col-md-4:nth-child(1) .card-subtitle').textContent = 'Active Vacancies';
+                document.querySelector('.col-md-4:nth-child(2) .card-subtitle').textContent = 'Total Candidates';
+                document.querySelector('.col-md-4:nth-child(3) .card-subtitle').textContent = 'Recent & Upcoming Applications';
+
+                // Update the icons to match the metrics
+                document.querySelector('.col-md-4:nth-child(1) .stats-icon i').className = 'bi bi-briefcase';
+                document.querySelector('.col-md-4:nth-child(2) .stats-icon i').className = 'bi bi-people';
+                document.querySelector('.col-md-4:nth-child(3) .stats-icon i').className = 'bi bi-person-plus';
+            } catch (error) {
+                console.error('Error loading dashboard stats:', error);
+            }
+        }
+
+        // Load recent activity
+        async function loadRecentActivity() {
+            try {
+                // Get recent candidates
+                const candidatesResponse = await fetch('http://localhost:3000/api/candidates');
+                const candidates = await candidatesResponse.json();
+                
+                const now = new Date();
+                const sevenDaysAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                
+                // Sort candidates by application date and get the 10 most recent/upcoming
+                const recentActivities = candidates
+                    .filter(candidate => {
+                        const appliedDate = new Date(candidate.applied_at);
+                        return appliedDate <= sevenDaysAhead;
+                    })
+                    .sort((a, b) => new Date(b.applied_at) - new Date(a.applied_at))
+                    .slice(0, 10)
+                    .map(candidate => {
+                        const appliedDate = new Date(candidate.applied_at);
+                        const isUpcoming = appliedDate > now;
+                        return {
+                            type: isUpcoming ? 'upcoming' : 'application',
+                            description: `${candidate.first_name} ${candidate.last_name} ${isUpcoming ? 'will apply' : 'applied'} for ${candidate.vacancy}`,
+                            timestamp: candidate.applied_at
+                        };
+                    });
+
+                const activityContainer = document.getElementById('recentActivity');
+                activityContainer.innerHTML = '';
+
+                if (recentActivities.length === 0) {
+                    activityContainer.innerHTML = `
+                        <div class="text-center text-muted p-4">
+                            No recent or upcoming activity to display
+                        </div>
+                    `;
+                    return;
+                }
+
+                recentActivities.forEach(activity => {
+                    const activityItem = document.createElement('div');
+                    activityItem.className = 'activity-item d-flex align-items-center p-3 border-bottom';
+                    activityItem.innerHTML = `
+                        <div class="activity-icon me-3">
+                            <i class="bi ${getActivityIcon(activity.type)}"></i>
+                        </div>
+                        <div class="activity-details flex-grow-1">
+                            <div class="activity-text">${activity.description}</div>
+                            <div class="activity-time text-muted small">${formatActivityTime(activity.timestamp)}</div>
+                        </div>
+                    `;
+                    activityContainer.appendChild(activityItem);
+                });
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+            }
+        }
+
+        // Helper function to get activity icon
+        function getActivityIcon(type) {
+            const icons = {
+                'vacancy': 'bi-briefcase',
+                'candidate': 'bi-person',
+                'interview': 'bi-calendar-check',
+                'application': 'bi-file-earmark-text',
+                'upcoming': 'bi-calendar-plus'
+            };
+            return icons[type] || 'bi-circle';
+        }
+
+        // Helper function to format activity time
+        function formatActivityTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+
+            if (date > now) {
+                const daysUntil = Math.ceil((date - now) / (1000 * 60 * 60 * 24));
+                return daysUntil === 1 ? 'Tomorrow' : `In ${daysUntil} days`;
+            }
+
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Load dashboard data when page loads
+        loadDashboardStats();
+        loadRecentActivity();
+
+        // Refresh data every 5 minutes
+        setInterval(() => {
+            loadDashboardStats();
+            loadRecentActivity();
+        }, 300000);
+    </script>
 </body>
 </html> 

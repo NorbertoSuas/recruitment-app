@@ -2,8 +2,51 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
+const multer = require('multer');
+const { postToAllPlatforms } = require('./services/external-postings');
+const settingsRoutes = require('./routes/settings');
+require('dotenv').config();
 
 const app = express();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, 'frontend', 'resumes'))
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+        cb(null, uniqueSuffix + '-' + file.originalname)
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.pdf', '.doc', '.docx'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only PDF and Word documents are allowed.'));
+        }
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB limit
+    }
+});
+
+// Session middleware
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
 
 // More permissive CORS configuration
 app.use(cors());
@@ -16,8 +59,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'frontend')));
 app.use('/resumes', express.static(path.join(__dirname, 'frontend', 'resumes')));
 
+// Use settings routes
+app.use('/api', settingsRoutes);
+
 // MongoDB connection with retry logic
-const MONGODB_URI = 'mongodb://127.0.0.1:27017/Innovation';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/Innovation';
 const MAX_RETRIES = 5;
 const RETRY_INTERVAL = 5000; // 5 seconds
 
@@ -50,16 +96,48 @@ const candidateSchema = new mongoose.Schema({
     email: { type: String, required: true },
     phone: { type: String, required: true },
     linkedin: { type: String },
-    experience: { type: String, required: true },
+    experience: { type: Number, required: true },
     education: { type: String, required: true },
     location: { type: String, required: true },
     skills: { type: String, required: true },
     resume: { type: String, required: true }, // Path to resume file
     status: { type: String, default: 'Pending' },
-    applied_at: { type: Date, default: Date.now }
+    applied_at: { type: Date, default: Date.now },
+    applied_for: { type: mongoose.Schema.Types.ObjectId, ref: 'Vacancy' }, // Reference to the vacancy
+    current_position: String
 }, { timestamps: true });
 
 const Candidate = mongoose.model('Candidate', candidateSchema);
+
+// Define Vacancy Schema
+const vacancySchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    company: { type: String, required: true },
+    location: { type: String, required: true },
+    type: { type: String, required: true }, // Full-time, Part-time, Contract, etc.
+    description: { type: String, required: true },
+    requirements: { type: String, required: true },
+    responsibilities: { type: String, required: true },
+    skills_required: [String],
+    experience_level: { type: String, required: true }, // Entry, Mid, Senior, etc.
+    salary_range: {
+        min: Number,
+        max: Number,
+        currency: { type: String, default: 'MXN' }
+    },
+    benefits: [String],
+    application_deadline: Date,
+    remote_option: { type: Boolean, default: false },
+    status: { type: String, default: 'Active' }, // Active, Filled, Closed
+    external_postings: {
+        linkedin: { type: String }, // LinkedIn post URL
+        occ: { type: String }      // OCC post URL
+    },
+    created_by: { type: String, required: true },
+    department: { type: String, required: true }
+}, { timestamps: true });
+
+const Vacancy = mongoose.model('Vacancy', vacancySchema);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -140,6 +218,189 @@ app.delete('/api/candidates/:id', async (req, res) => {
     }
 });
 
+// Update candidate status
+app.put('/api/candidates/:id/status', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB is not connected. Please try again later.');
+        }
+
+        const updatedCandidate = await Candidate.findByIdAndUpdate(
+            req.params.id,
+            { status: req.body.status },
+            { new: true }
+        );
+
+        if (!updatedCandidate) {
+            return res.status(404).json({ error: 'Candidate not found' });
+        }
+
+        console.log(`Successfully updated status for candidate ${req.params.id} to ${req.body.status}`);
+        res.json(updatedCandidate);
+    } catch (err) {
+        console.error('Error updating candidate status:', err);
+        res.status(500).json({ 
+            error: 'Error updating candidate status',
+            details: err.message 
+        });
+    }
+});
+
+// Vacancy API Routes
+app.get('/api/vacancies', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB is not connected. Please try again later.');
+        }
+
+        const vacancies = await Vacancy.find({ status: 'Active' });
+        console.log(`Successfully fetched ${vacancies.length} vacancies`);
+        res.json(vacancies);
+    } catch (err) {
+        console.error('Error fetching vacancies:', err);
+        res.status(500).json({ 
+            error: 'Error fetching vacancies',
+            details: err.message,
+            mongoStatus: mongoose.connection.readyState
+        });
+    }
+});
+
+app.post('/api/vacancies', async (req, res) => {
+    try {
+        const newVacancy = new Vacancy(req.body);
+        await newVacancy.save();
+        
+        // Post to external platforms
+        const externalPostings = await postToAllPlatforms(newVacancy);
+        
+        if (externalPostings.success) {
+            // Update the vacancy with external posting URLs
+            const platforms = externalPostings.platforms;
+            newVacancy.external_postings = {
+                linkedin: platforms.linkedin.success ? platforms.linkedin.url : null,
+                occ: platforms.occ.success ? platforms.occ.url : null
+            };
+            await newVacancy.save();
+        }
+
+        res.status(201).json({
+            vacancy: newVacancy,
+            external_postings: externalPostings
+        });
+    } catch (err) {
+        console.error('Error creating vacancy:', err);
+        res.status(500).json({ 
+            error: 'Error creating vacancy',
+            details: err.message 
+        });
+    }
+});
+
+app.put('/api/vacancies/:id', async (req, res) => {
+    try {
+        const updatedVacancy = await Vacancy.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+        res.json(updatedVacancy);
+    } catch (err) {
+        console.error('Error updating vacancy:', err);
+        res.status(500).json({ 
+            error: 'Error updating vacancy',
+            details: err.message 
+        });
+    }
+});
+
+app.delete('/api/vacancies/:id', async (req, res) => {
+    try {
+        await Vacancy.findByIdAndDelete(req.params.id);
+        res.status(204).send();
+    } catch (err) {
+        console.error('Error deleting vacancy:', err);
+        res.status(500).json({ 
+            error: 'Error deleting vacancy',
+            details: err.message 
+        });
+    }
+});
+
+// Get candidates for a specific vacancy
+app.get('/api/vacancies/:id/candidates', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB is not connected. Please try again later.');
+        }
+
+        const candidates = await Candidate.find({ 
+            applied_for: req.params.id
+        })
+        .select('-resume') // Exclude resume field for performance
+        .populate('applied_for', 'title'); // Populate the vacancy title
+
+        console.log(`Successfully fetched ${candidates.length} candidates for vacancy ${req.params.id}`);
+        res.json(candidates);
+    } catch (err) {
+        console.error('Error fetching candidates for vacancy:', err);
+        res.status(500).json({ 
+                error: 'Error fetching candidates',
+                details: err.message 
+            });
+        }
+});
+
+// Resume upload endpoint
+app.post('/api/upload-resume', upload.single('resume'), (req, res) => {
+    try {
+        if (!req.file) {
+            throw new Error('No file uploaded');
+        }
+        res.json({ 
+            filename: req.file.filename,
+            message: 'File uploaded successfully' 
+        });
+    } catch (err) {
+        console.error('Error uploading file:', err);
+        res.status(400).json({ 
+            error: 'Error uploading file',
+            details: err.message 
+        });
+    }
+});
+
+// Assign vacancy to candidate
+app.put('/api/candidates/:id/assign-vacancy', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB is not connected. Please try again later.');
+        }
+
+        const updatedCandidate = await Candidate.findByIdAndUpdate(
+            req.params.id,
+            { 
+                applied_for: req.body.vacancyId,
+                status: 'Pending' // Reset status when reassigning
+            },
+            { new: true }
+        ).populate('applied_for', 'title');
+
+        if (!updatedCandidate) {
+            return res.status(404).json({ error: 'Candidate not found' });
+        }
+
+        console.log(`Successfully assigned vacancy ${req.body.vacancyId} to candidate ${req.params.id}`);
+        res.json(updatedCandidate);
+    } catch (err) {
+        console.error('Error assigning vacancy to candidate:', err);
+        res.status(500).json({ 
+            error: 'Error assigning vacancy',
+            details: err.message 
+        });
+    }
+});
+
 // Error handler - Must come after all routes
 app.use((err, req, res, next) => {
     console.error('Express error:', err);
@@ -151,7 +412,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
-const PORT = 8000;
+const PORT = 3000;
 const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Visit http://localhost:${PORT} to view the website`);

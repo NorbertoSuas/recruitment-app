@@ -10,14 +10,35 @@ const MONGODB_URI = 'mongodb://localhost:27017/Innovation';
 const firstNames = ['John', 'Emma', 'Michael', 'Sophia', 'William', 'Olivia', 'James', 'Ava', 'Alexander', 'Isabella'];
 const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez'];
 const locations = ['New York, NY', 'Los Angeles, CA', 'Chicago, IL', 'Houston, TX', 'Phoenix, AZ', 'Philadelphia, PA'];
-const skills = [
-    'JavaScript, React, Node.js, MongoDB',
-    'Python, Django, PostgreSQL, AWS',
-    'Java, Spring Boot, MySQL, Docker',
-    'C#, .NET, SQL Server, Azure',
-    'PHP, Laravel, MySQL, Redis',
-    'Ruby, Rails, PostgreSQL, Heroku'
+
+// Define vacancies
+const vacancies = [
+    {
+        title: 'Senior Software Engineer',
+        skills: [
+            'JavaScript, React, Node.js, System Design',
+            'Java, Spring Boot, Microservices, AWS',
+            'Python, Django, Cloud Architecture, CI/CD'
+        ]
+    },
+    {
+        title: 'Product Manager',
+        skills: [
+            'Product Strategy, Agile, JIRA, Roadmapping',
+            'User Research, Data Analytics, A/B Testing',
+            'Stakeholder Management, Product Development'
+        ]
+    },
+    {
+        title: 'UX Designer',
+        skills: [
+            'Figma, Adobe XD, User Research, Wireframing',
+            'UI Design, Prototyping, User Testing',
+            'Design Systems, Information Architecture'
+        ]
+    }
 ];
+
 const educationLevels = [
     'Bachelor in Computer Science, MIT',
     'Master in Software Engineering, Stanford',
@@ -26,14 +47,12 @@ const educationLevels = [
     'Bachelor in Software Development, Carnegie Mellon',
     'Master in Data Science, UCLA'
 ];
-const experiences = [
-    '5 years of full-stack development experience',
-    '3 years of frontend development with React',
-    '4 years of backend development with Node.js',
-    '6 years of Java enterprise development',
-    '3 years of Python development',
-    '4 years of .NET development'
-];
+
+const experiences = {
+    'Senior Software Engineer': { min: 5, max: 12 },
+    'Product Manager': { min: 4, max: 10 },
+    'UX Designer': { min: 3, max: 8 }
+};
 
 // Candidate Schema
 const candidateSchema = new mongoose.Schema({
@@ -42,13 +61,15 @@ const candidateSchema = new mongoose.Schema({
     email: { type: String, required: true },
     phone: { type: String, required: true },
     linkedin: { type: String },
-    experience: { type: String, required: true },
+    experience: { type: Number, required: true },
     education: { type: String, required: true },
     location: { type: String, required: true },
     skills: { type: String, required: true },
     resume: { type: String, required: true },
     status: { type: String, default: 'Pending' },
-    applied_at: { type: Date, default: Date.now }
+    applied_at: { type: Date, default: Date.now },
+    vacancy: { type: String, required: true },
+    source: { type: String, required: true }
 }, { timestamps: true });
 
 const Candidate = mongoose.model('Candidate', candidateSchema);
@@ -77,13 +98,19 @@ async function generateResume(candidateInfo) {
         size: 12
     });
     
+    page.drawText(`Position: ${candidateInfo.vacancy}`, {
+        x: 50,
+        y: height - 120,
+        size: 12
+    });
+    
     page.drawText(`Education: ${candidateInfo.education}`, {
         x: 50,
         y: height - 140,
         size: 12
     });
     
-    page.drawText(`Experience: ${candidateInfo.experience}`, {
+    page.drawText(`Experience: ${candidateInfo.experience} years`, {
         x: 50,
         y: height - 180,
         size: 12
@@ -99,25 +126,65 @@ async function generateResume(candidateInfo) {
 }
 
 // Function to generate random candidate data
-function generateRandomCandidate(index) {
+function generateRandomCandidate(position) {
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
     const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${index}@example.com`;
-    const phone = `+1${Math.floor(Math.random() * 900 + 100)}${Math.floor(Math.random() * 900 + 100)}${Math.floor(Math.random() * 10000)}`;
+    const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}@example.com`;
+    const phone = `+1${Math.floor(Math.random() * 9000000000) + 1000000000}`;
+    const location = "Phoenix, AZ";
+    const education = "Master in Computer Engineering, Georgia Tech";
     
+    // Generate experience based on position
+    const experienceRanges = {
+        'Senior Software Engineer': { min: 5, max: 12 },
+        'Product Manager': { min: 4, max: 10 },
+        'UX Designer': { min: 3, max: 8 }
+    };
+    const range = experienceRanges[position];
+    const experience = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
+
+    // Determine if candidate is from OCC (30% chance)
+    const isFromOCC = Math.random() < 0.3;
+
+    // Generate LinkedIn URL only for non-OCC candidates (70% chance for them to have LinkedIn)
+    const hasLinkedIn = !isFromOCC && Math.random() < 0.7;
+    const linkedin = hasLinkedIn ? `https://linkedin.com/in/${firstName.toLowerCase()}-${lastName.toLowerCase()}-${Math.random().toString(36).substring(2, 8)}` : null;
+
+    // Position-specific skills
+    const skillSets = {
+        'Senior Software Engineer': ['Python', 'Django', 'PostgreSQL', 'AWS', 'Docker', 'Kubernetes', 'React', 'Node.js', 'System Design'],
+        'Product Manager': ['Product Strategy', 'Agile', 'JIRA', 'User Research', 'Data Analysis', 'Roadmapping', 'Stakeholder Management'],
+        'UX Designer': ['Figma', 'Adobe XD', 'User Research', 'Wireframing', 'Prototyping', 'UI Design', 'Usability Testing']
+    };
+
+    // Select 4-6 random skills from the position's skill set
+    const positionSkills = skillSets[position];
+    const numSkills = Math.floor(Math.random() * 3) + 4; // 4-6 skills
+    const skills = shuffleArray([...positionSkills]).slice(0, numSkills).join(', ');
+
     return {
         first_name: firstName,
         last_name: lastName,
         email: email,
         phone: phone,
-        linkedin: `https://linkedin.com/in/${firstName.toLowerCase()}-${lastName.toLowerCase()}-${index}`,
-        experience: experiences[Math.floor(Math.random() * experiences.length)],
-        education: educationLevels[Math.floor(Math.random() * educationLevels.length)],
-        location: locations[Math.floor(Math.random() * locations.length)],
-        skills: skills[Math.floor(Math.random() * skills.length)],
-        status: Math.random() > 0.5 ? 'Pending' : 'Reviewed',
-        applied_at: new Date(Date.now() - Math.floor(Math.random() * 90) * 24 * 60 * 60 * 1000)
+        location: location,
+        education: education,
+        experience: experience,
+        skills: skills,
+        linkedin: linkedin,
+        vacancy: position,
+        status: ['Pending', 'Interviewed', 'Accepted', 'Rejected'][Math.floor(Math.random() * 4)],
+        source: isFromOCC ? 'OCC' : 'Direct Application'
     };
+}
+
+// Helper function to shuffle array
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 // Main function to generate and save candidates
@@ -130,25 +197,28 @@ async function generateCandidates() {
         const resumesDir = path.join(__dirname, 'frontend', 'resumes');
         await fs.mkdir(resumesDir, { recursive: true });
         
-        // Generate and save 100 candidates
-        for (let i = 0; i < 100; i++) {
-            const candidateData = generateRandomCandidate(i);
-            
-            // Generate and save PDF resume
-            const pdfBytes = await generateResume(candidateData);
-            const resumePath = path.join('resumes', `resume_${candidateData.first_name}_${candidateData.last_name}_${i}.pdf`);
-            await fs.writeFile(path.join(__dirname, 'frontend', resumePath), pdfBytes);
-            
-            // Add resume path to candidate data
-            candidateData.resume = resumePath;
-            
-            // Save candidate to database
-            const candidate = new Candidate(candidateData);
-            await candidate.save();
-            console.log(`Created candidate ${i + 1}/100: ${candidateData.first_name} ${candidateData.last_name}`);
+        // Generate 100 candidates for each vacancy
+        for (const vacancy of vacancies) {
+            console.log(`\nGenerating candidates for ${vacancy.title}`);
+            for (let i = 0; i < 100; i++) {
+                const candidateData = generateRandomCandidate(vacancy.title);
+                
+                // Generate and save PDF resume
+                const pdfBytes = await generateResume(candidateData);
+                const resumePath = path.join('resumes', `resume_${vacancy.title.replace(/\s+/g, '_')}_${candidateData.first_name}_${candidateData.last_name}_${i}.pdf`);
+                await fs.writeFile(path.join(__dirname, 'frontend', resumePath), pdfBytes);
+                
+                // Add resume path to candidate data
+                candidateData.resume = resumePath;
+                
+                // Save candidate to database
+                const candidate = new Candidate(candidateData);
+                await candidate.save();
+                console.log(`Created candidate ${i + 1}/100: ${candidateData.first_name} ${candidateData.last_name} for ${vacancy.title}`);
+            }
         }
         
-        console.log('Successfully generated 100 candidates with resumes');
+        console.log('\nSuccessfully generated 300 candidates with resumes');
         process.exit(0);
     } catch (error) {
         console.error('Error generating candidates:', error);

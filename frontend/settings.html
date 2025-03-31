@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Mahindra HR Portal - Settings</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="assets/tech-mahindra-logo.svg" alt="Tech Mahindra">
+        </div>
+        <ul class="sidebar-nav">
+            <li>
+                <a href="index.html">
+                    <i class="bi bi-speedometer2"></i>
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="vacancies.html">
+                    <i class="bi bi-briefcase"></i>
+                    Vacancies
+                </a>
+            </li>
+            <li>
+                <a href="candidates.html">
+                    <i class="bi bi-people"></i>
+                    Candidates
+                </a>
+            </li>
+            <li>
+                <a href="settings.html" class="active">
+                    <i class="bi bi-gear"></i>
+                    Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1 class="section-title">Settings</h1>
+
+        <!-- Company Profile Section -->
+        <div class="tm-card">
+            <div class="card-header">
+                <h5>
+                    <i class="bi bi-building me-2"></i>
+                    Company Profile
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="companyProfileForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" id="companyName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Industry</label>
+                            <input type="text" class="form-control" id="industry" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Company Description</label>
+                        <textarea class="form-control" id="companyDescription" rows="3" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Website</label>
+                            <input type="url" class="form-control" id="website">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Size</label>
+                            <select class="form-select" id="companySize" required>
+                                <option value="">Select size</option>
+                                <option value="1-10">1-10 employees</option>
+                                <option value="11-50">11-50 employees</option>
+                                <option value="51-200">51-200 employees</option>
+                                <option value="201-500">201-500 employees</option>
+                                <option value="501+">501+ employees</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Save Company Profile
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- LinkedIn Integration Section -->
+        <div class="tm-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>
+                    <i class="bi bi-linkedin me-2"></i>
+                    LinkedIn Integration
+                </h5>
+                <span id="linkedinStatus" class="status-badge status-not-connected">Not Connected</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Connect your LinkedIn account to automatically post job vacancies to your company's LinkedIn page.</p>
+                <div id="linkedinConnectSection">
+                    <button id="connectLinkedIn" class="btn btn-primary">
+                        <i class="bi bi-linkedin me-2"></i>Connect LinkedIn Account
+                    </button>
+                </div>
+                <div id="linkedinConnectedSection" class="d-none">
+                    <div class="mb-3">
+                        <label class="form-label">Connected Account</label>
+                        <input type="text" class="form-control" id="linkedinAccount" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Company Page</label>
+                        <select class="form-select" id="linkedinCompanyPage">
+                            <option value="">Select company page</option>
+                        </select>
+                    </div>
+                    <button id="disconnectLinkedIn" class="btn btn-danger">
+                        <i class="bi bi-x-circle me-2"></i>Disconnect LinkedIn Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- OCC Integration Section -->
+        <div class="tm-card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>
+                    <i class="bi bi-globe me-2"></i>
+                    OCC Mundial Integration
+                </h5>
+                <span id="occStatus" class="status-badge status-not-connected">Not Connected</span>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Connect your OCC Mundial account to automatically post job vacancies to OCC Mundial.</p>
+                <form id="occCredentialsForm">
+                    <div class="mb-3">
+                        <label class="form-label">API Key</label>
+                        <input type="password" class="form-control" id="occApiKey">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">API Secret</label>
+                        <input type="password" class="form-control" id="occApiSecret">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Company ID</label>
+                        <input type="text" class="form-control" id="occCompanyId">
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-2"></i>Save OCC Credentials
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Company Profile Management
+        document.getElementById('companyProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: document.getElementById('companyName').value,
+                industry: document.getElementById('industry').value,
+                description: document.getElementById('companyDescription').value,
+                website: document.getElementById('website').value,
+                size: document.getElementById('companySize').value
+            };
+
+            try {
+                const response = await fetch('/api/settings/company', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('Company profile saved successfully!');
+                } else {
+                    throw new Error('Failed to save company profile');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving company profile');
+            }
+        });
+
+        // LinkedIn Integration
+        document.getElementById('connectLinkedIn').addEventListener('click', () => {
+            window.location.href = '/api/auth/linkedin';
+        });
+
+        document.getElementById('disconnectLinkedIn').addEventListener('click', async () => {
+            try {
+                const response = await fetch('/api/auth/linkedin/disconnect', { method: 'POST' });
+                if (response.ok) {
+                    document.getElementById('linkedinStatus').className = 'status-badge status-not-connected';
+                    document.getElementById('linkedinStatus').textContent = 'Not Connected';
+                    document.getElementById('linkedinConnectSection').classList.remove('d-none');
+                    document.getElementById('linkedinConnectedSection').classList.add('d-none');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error disconnecting LinkedIn account');
+            }
+        });
+
+        // OCC Integration
+        document.getElementById('occCredentialsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                apiKey: document.getElementById('occApiKey').value,
+                apiSecret: document.getElementById('occApiSecret').value,
+                companyId: document.getElementById('occCompanyId').value
+            };
+
+            try {
+                const response = await fetch('/api/settings/occ', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('occStatus').className = 'status-badge status-connected';
+                    document.getElementById('occStatus').textContent = 'Connected';
+                    alert('OCC credentials saved successfully!');
+                } else {
+                    throw new Error('Failed to save OCC credentials');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving OCC credentials');
+            }
+        });
+
+        // Load saved settings
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    
+                    // Load company profile
+                    if (settings.company) {
+                        document.getElementById('companyName').value = settings.company.name || '';
+                        document.getElementById('industry').value = settings.company.industry || '';
+                        document.getElementById('companyDescription').value = settings.company.description || '';
+                        document.getElementById('website').value = settings.company.website || '';
+                        document.getElementById('companySize').value = settings.company.size || '';
+                    }
+
+                    // Load LinkedIn status
+                    if (settings.linkedin?.connected) {
+                        document.getElementById('linkedinStatus').className = 'status-badge status-connected';
+                        document.getElementById('linkedinStatus').textContent = 'Connected';
+                        document.getElementById('linkedinConnectSection').classList.add('d-none');
+                        document.getElementById('linkedinConnectedSection').classList.remove('d-none');
+                        document.getElementById('linkedinAccount').value = settings.linkedin.email;
+                        
+                        // Load company pages
+                        if (settings.linkedin.companyPages) {
+                            const select = document.getElementById('linkedinCompanyPage');
+                            settings.linkedin.companyPages.forEach(page => {
+                                const option = new Option(page.name, page.id);
+                                select.add(option);
+                            });
+                            select.value = settings.linkedin.selectedCompanyPage || '';
+                        }
+                    }
+
+                    // Load OCC status
+                    if (settings.occ?.connected) {
+                        document.getElementById('occStatus').className = 'status-badge status-connected';
+                        document.getElementById('occStatus').textContent = 'Connected';
+                        document.getElementById('occApiKey').value = settings.occ.apiKey || '';
+                        document.getElementById('occCompanyId').value = settings.occ.companyId || '';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        // Load settings when page loads
+        loadSettings();
+    </script>
+</body>
+</html> 
