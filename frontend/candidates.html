@@ -333,42 +333,27 @@
                             <div class="card candidate-card h-100">
                                 <div class="card-body">
                                     <h5 class="card-title">${candidate.first_name} ${candidate.last_name}</h5>
-                                    <p class="text-muted mb-2">${candidate.current_position || 'No current position'}</p>
-                                    
-                                    <div class="candidate-info mb-3">
-                                        <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
-                                        <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
-                                        <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
-                                        <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
-                                        <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
-                                        <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
-                                        ${candidate.linkedin ? `
-                                        <p><i class="bi bi-linkedin me-2"></i><a href="${candidate.linkedin}" target="_blank" class="text-primary">LinkedIn Profile</a></p>
-                                        ` : ''}
-                                        <p><i class="bi bi-building me-2"></i>Source: ${candidate.source}</p>
-                                    </div>
-
-                                    <div class="skills-section mb-3">
-                                        <h6 class="mb-2">Skills</h6>
-                                        <div class="d-flex flex-wrap gap-1">
-                                            ${candidate.skills.split(',').map(skill => 
-                                                `<span class="badge bg-secondary">${skill.trim()}</span>`
-                                            ).join('')}
+                                    <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
+                                    <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
+                                    <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
+                                    <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
+                                    <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
+                                    <p><i class="bi bi-tools me-2"></i>${candidate.skills}</p>
+                                    <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
+                                    <p><i class="bi bi-tag me-2"></i>Status: ${candidate.status}</p>
+                                    <p><i class="bi bi-calendar me-2"></i>Applied: ${new Date(candidate.applied_at).toLocaleDateString()}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <div class="btn-group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewResume('${candidate.resume}')">
+                                                <i class="bi bi-eye"></i> View Resume
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="updateStatus('${candidate._id}', 'Interviewed')">
+                                                <i class="bi bi-check-circle"></i> Interview
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('${candidate._id}', 'Rejected')">
+                                                <i class="bi bi-x-circle"></i> Reject
+                                            </button>
                                         </div>
-                                    </div>
-
-                                    <div class="status-section mb-3">
-                                        <span class="badge bg-${getStatusColor(candidate.status)} px-3 py-2">
-                                            ${candidate.status}
-                                        </span>
-                                    </div>
-
-                                    <div class="action-buttons">
-                                        ${candidate.resume ? `
-                                            <a href="/resumes/${candidate.resume}" class="btn btn-sm btn-info w-100" target="_blank">
-                                                <i class="bi bi-file-earmark-text me-1"></i>View Resume
-                                            </a>
-                                        ` : ''}
                                     </div>
                                 </div>
                             </div>
@@ -499,6 +484,14 @@
 
         // Load candidates when page loads
         document.addEventListener('DOMContentLoaded', loadCandidates);
+
+        // Update the viewResume function
+        function viewResume(resumePath) {
+            // Create a full URL for the resume
+            const filename = resumePath.split('/').pop();
+            const resumeUrl = `http://localhost:3000/resumes/${filename}`;
+            window.open(resumeUrl, '_blank');
+        }
     </script>
 
     <style>

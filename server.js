@@ -6,6 +6,7 @@ const session = require('express-session');
 const multer = require('multer');
 const { postToAllPlatforms } = require('./services/external-postings');
 const settingsRoutes = require('./routes/settings');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -16,8 +17,10 @@ const storage = multer.diskStorage({
         cb(null, path.join(__dirname, 'frontend', 'resumes'))
     },
     filename: function (req, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-        cb(null, uniqueSuffix + '-' + file.originalname)
+        // Create a more structured filename
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, `resume_${uniqueSuffix}${ext}`);
     }
 });
 
@@ -57,7 +60,25 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'frontend')));
-app.use('/resumes', express.static(path.join(__dirname, 'frontend', 'resumes')));
+
+// Dedicated route for resume files with error handling
+app.get('/resumes/:filename', (req, res) => {
+    try {
+        const resumePath = path.join(__dirname, 'frontend', 'resumes', req.params.filename);
+        // Check if file exists
+        if (!fs.existsSync(resumePath)) {
+            console.error(`Resume file not found: ${resumePath}`);
+            return res.status(404).json({ error: 'Resume file not found' });
+        }
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename=' + req.params.filename);
+        const fileStream = fs.createReadStream(resumePath);
+        fileStream.pipe(res);
+    } catch (error) {
+        console.error('Error serving resume file:', error);
+        res.status(500).json({ error: 'Error serving resume file', details: error.message });
+    }
+});
 
 // Use settings routes
 app.use('/api', settingsRoutes);

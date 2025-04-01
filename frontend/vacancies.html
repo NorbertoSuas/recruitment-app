@@ -274,7 +274,7 @@
             try {
                 const response = await fetch('http://localhost:3000/api/vacancies');
                 if (response.ok) {
-                    const vacancies = await response.json();
+                const vacancies = await response.json();
                     const vacanciesList = document.getElementById('vacanciesList');
                     vacanciesList.innerHTML = '';
                     
@@ -348,7 +348,7 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
+                    </div>
                         `;
                         vacanciesList.appendChild(card);
                     });
@@ -409,7 +409,7 @@
                                         <i class="bi bi-eye"></i>
                                     </button>
                                     ${candidate.resume ? `
-                                        <a href="/resumes/${candidate.resume}" class="btn btn-sm btn-secondary ms-1" target="_blank">
+                                        <a href="javascript:void(0)" class="btn btn-sm btn-secondary ms-1" onclick="viewResume('${candidate.resume}')">
                                             <i class="bi bi-file-earmark-text"></i>
                                         </a>
                                     ` : ''}
@@ -453,6 +453,13 @@
 
         // Load vacancies when page loads
         document.addEventListener('DOMContentLoaded', loadVacancies);
+
+        function viewResume(resumePath) {
+            // Create a full URL for the resume
+            const filename = resumePath.split('/').pop();
+            const resumeUrl = `http://localhost:3000/resumes/${filename}`;
+            window.open(resumeUrl, '_blank');
+        }
     </script>
 
     <style>

@@ -197,28 +197,40 @@ async function generateCandidates() {
         const resumesDir = path.join(__dirname, 'frontend', 'resumes');
         await fs.mkdir(resumesDir, { recursive: true });
         
-        // Generate 100 candidates for each vacancy
-        for (const vacancy of vacancies) {
-            console.log(`\nGenerating candidates for ${vacancy.title}`);
-            for (let i = 0; i < 100; i++) {
-                const candidateData = generateRandomCandidate(vacancy.title);
-                
+        // Generate 30 candidates for each position
+        const positions = ['Senior Software Engineer', 'Product Manager', 'UX Designer'];
+        const candidates = [];
+        positions.forEach(position => {
+            for (let i = 0; i < 30; i++) {
+                const candidate = generateRandomCandidate(position);
+                candidates.push(candidate);
+            }
+        });
+        
+        // Generate and save PDFs for candidates
+        for (const candidate of candidates) {
+            try {
                 // Generate and save PDF resume
-                const pdfBytes = await generateResume(candidateData);
-                const resumePath = path.join('resumes', `resume_${vacancy.title.replace(/\s+/g, '_')}_${candidateData.first_name}_${candidateData.last_name}_${i}.pdf`);
-                await fs.writeFile(path.join(__dirname, 'frontend', resumePath), pdfBytes);
+                const pdfBytes = await generateResume(candidate);
+                const resumeFilename = `resume_${candidate.vacancy.replace(/\s+/g, '_')}_${candidate.first_name}_${candidate.last_name}_${Math.random().toString(36).substring(2, 8)}.pdf`;
+                const resumePath = path.join(resumesDir, resumeFilename);
                 
-                // Add resume path to candidate data
-                candidateData.resume = resumePath;
+                // Write the PDF file
+                await fs.writeFile(resumePath, pdfBytes);
+                
+                // Store only the filename in the database
+                candidate.resume = resumeFilename;
                 
                 // Save candidate to database
-                const candidate = new Candidate(candidateData);
-                await candidate.save();
-                console.log(`Created candidate ${i + 1}/100: ${candidateData.first_name} ${candidateData.last_name} for ${vacancy.title}`);
+                const candidateModel = new Candidate(candidate);
+                await candidateModel.save();
+                console.log(`Created candidate: ${candidate.first_name} ${candidate.last_name} for ${candidate.vacancy}`);
+            } catch (error) {
+                console.error(`Error creating resume for ${candidate.first_name} ${candidate.last_name}:`, error);
             }
         }
         
-        console.log('\nSuccessfully generated 300 candidates with resumes');
+        console.log('\nSuccessfully generated 90 candidates with resumes');
         process.exit(0);
     } catch (error) {
         console.error('Error generating candidates:', error);
