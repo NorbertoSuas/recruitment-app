@@ -210,6 +210,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // API Base URL
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+            ? `${window.location.protocol}//${window.location.hostname}:3000`
+            : '';
+
         // Toggle vacancy form
         document.getElementById('toggleVacancyForm').addEventListener('click', () => {
             const form = document.getElementById('vacancyForm');
@@ -249,7 +254,7 @@
             };
 
             try {
-                const response = await fetch('http://localhost:3000/api/vacancies', {
+                const response = await fetch(`${API_BASE_URL}/api/vacancies`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(vacancy)
@@ -272,7 +277,7 @@
         // Load and display vacancies
         async function loadVacancies() {
             try {
-                const response = await fetch('http://localhost:3000/api/vacancies');
+                const response = await fetch(`${API_BASE_URL}/api/vacancies`);
                 if (response.ok) {
                 const vacancies = await response.json();
                     const vacanciesList = document.getElementById('vacanciesList');
@@ -342,9 +347,12 @@
                                         </div>
                                     ` : ''}
 
-                                    <div class="mt-3">
-                                        <button class="btn btn-primary w-100" onclick="viewCandidates('${vacancy._id}', '${vacancy.title}')">
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button class="btn btn-primary flex-grow-1" onclick="viewCandidates('${vacancy._id || vacancy.id}', '${vacancy.title}')">
                                             <i class="bi bi-people me-1"></i>View Candidates
+                                        </button>
+                                        <button class="btn btn-success flex-grow-1" onclick="viewTopCandidates('${vacancy._id || vacancy.id}', '${vacancy.title}')">
+                                            <i class="bi bi-star me-1"></i>Top Candidates
                                         </button>
                                     </div>
                                 </div>
@@ -361,7 +369,7 @@
         // View candidates for a specific vacancy
         async function viewCandidates(vacancyId, title) {
             try {
-                const response = await fetch(`http://localhost:3000/api/vacancies/${vacancyId}/candidates`);
+                const response = await fetch(`${API_BASE_URL}/api/vacancies/${vacancyId}/candidates`);
                 if (response.ok) {
                     const candidates = await response.json();
                     const candidatesList = document.getElementById('vacancyCandidatesList');
@@ -381,11 +389,9 @@
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">
                                         ${candidate.skills.split(',').slice(0, 3).map(skill => 
-                                            `<span class="badge bg-secondary">${skill.trim()}</span>`
+                                            `<span class="badge bg-secondary me-1">${skill.trim()}</span>`
                                         ).join('')}
-                                        ${candidate.skills.split(',').length > 3 ? 
-                                            `<span class="badge bg-secondary">+${candidate.skills.split(',').length - 3}</span>` : 
-                                            ''}
+                                        ${candidate.skills.split(',').length > 3 ? `<span class="badge bg-secondary">+${candidate.skills.split(',').length - 3}</span>` : ''}
                                     </div>
                                 </td>
                                 <td>
@@ -394,42 +400,118 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <div class="contact-info-popover d-none" id="contact-${candidate._id}">
-                                        ${candidate.linkedin ? `<p><i class="bi bi-linkedin"></i> <a href="${candidate.linkedin}" target="_blank">LinkedIn Profile</a></p>` : ''}
-                                        ${candidate.email ? `<p><i class="bi bi-envelope"></i> <a href="mailto:${candidate.email}">${candidate.email}</a></p>` : ''}
-                                        ${candidate.phone ? `<p><i class="bi bi-telephone"></i> <a href="tel:${candidate.phone}">${candidate.phone}</a></p>` : ''}
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-info" 
+                                            data-bs-toggle="popover" 
+                                            data-bs-trigger="click"
+                                            data-bs-html="true"
+                                            data-bs-content="
+                                                <div class='contact-info'>
+                                                    ${candidate.linkedin ? `<a href='${candidate.linkedin}' target='_blank' class='d-block mb-2'><i class='bi bi-linkedin'></i> LinkedIn Profile</a>` : ''}
+                                                    <a href='mailto:${candidate.email}' class='d-block mb-2'><i class='bi bi-envelope'></i> ${candidate.email}</a>
+                                                    <a href='tel:${candidate.phone}' class='d-block mb-2'><i class='bi bi-telephone'></i> ${candidate.phone}</a>
+                                                    <a href='javascript:void(0)' onclick='viewResume(\"${candidate.resume}\")' class='d-block'><i class='bi bi-file-pdf'></i> View Resume</a>
+                                                </div>
+                                            ">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-success" onclick="updateCandidateStatus('${candidate._id}', 'Interviewed')">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" onclick="updateCandidateStatus('${candidate._id}', 'Rejected')">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
                                     </div>
-                                    <button class="btn btn-sm btn-info" 
-                                        data-bs-toggle="popover" 
-                                        data-bs-placement="left"
-                                        data-bs-html="true"
-                                        data-bs-content="Loading..."
-                                        data-candidate-id="${candidate._id}"
-                                        onclick="toggleContactInfo(this, '${candidate._id}')">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                    ${candidate.resume ? `
-                                        <a href="javascript:void(0)" class="btn btn-sm btn-secondary ms-1" onclick="viewResume('${candidate.resume}')">
-                                            <i class="bi bi-file-earmark-text"></i>
-                                        </a>
-                                    ` : ''}
                                 </td>
                             </tr>
                         `).join('');
 
-                        // Initialize all popovers
-                        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-                        popoverTriggerList.map(function (popoverTriggerEl) {
-                            return new bootstrap.Popover(popoverTriggerEl, {
-                                trigger: 'focus'
-                            });
-                        });
+                        // Initialize popovers after loading candidates
+                        initializePopovers();
                     }
                     
                     new bootstrap.Modal(document.getElementById('candidatesModal')).show();
                 }
             } catch (error) {
                 console.error('Error loading candidates:', error);
+            }
+        }
+
+        // View top candidates for a specific vacancy
+        async function viewTopCandidates(vacancyId, title) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/vacancies/${vacancyId}/top-candidates`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const candidates = await response.json();
+                const candidatesList = document.getElementById('vacancyCandidatesList');
+                document.getElementById('vacancyTitle').textContent = `Top Candidates for ${title}`;
+                
+                if (candidates.length === 0) {
+                    candidatesList.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center">No candidates have applied for this position yet.</td>
+                        </tr>
+                    `;
+                } else {
+                    candidatesList.innerHTML = candidates.map(candidate => `
+                        <tr>
+                            <td>${candidate.first_name} ${candidate.last_name}</td>
+                            <td>${candidate.experience} years</td>
+                            <td>
+                                <div class="d-flex flex-wrap gap-1">
+                                    ${candidate.skills.split(',').slice(0, 3).map(skill => 
+                                        `<span class="badge bg-secondary me-1">${skill.trim()}</span>`
+                                    ).join('')}
+                                    ${candidate.skills.split(',').length > 3 ? `<span class="badge bg-secondary">+${candidate.skills.split(',').length - 3}</span>` : ''}
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="match-score me-2" style="color: ${getMatchScoreColor(candidate.match_score)}">
+                                        ${Math.round(candidate.match_score * 100)}% Match
+                                    </div>
+                                    <span class="badge bg-${getStatusColor(candidate.status)}">
+                                        ${candidate.status}
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-sm btn-info" 
+                                        data-bs-toggle="popover" 
+                                        data-bs-trigger="click"
+                                        data-bs-html="true"
+                                        data-bs-content="
+                                            <div class='contact-info'>
+                                                ${candidate.linkedin ? `<a href='${candidate.linkedin}' target='_blank' class='d-block mb-2'><i class='bi bi-linkedin'></i> LinkedIn Profile</a>` : ''}
+                                                <a href='mailto:${candidate.email}' class='d-block mb-2'><i class='bi bi-envelope'></i> ${candidate.email}</a>
+                                                <a href='tel:${candidate.phone}' class='d-block mb-2'><i class='bi bi-telephone'></i> ${candidate.phone}</a>
+                                                <a href='javascript:void(0)' onclick='viewResume(\"${candidate.resume}\")' class='d-block'><i class='bi bi-file-pdf'></i> View Resume</a>
+                                            </div>
+                                        ">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-success" onclick="updateCandidateStatus('${candidate._id}', 'Interviewed')">
+                                        <i class="bi bi-check-circle"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="updateCandidateStatus('${candidate._id}', 'Rejected')">
+                                        <i class="bi bi-x-circle"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `).join('');
+
+                    // Initialize popovers after loading candidates
+                    initializePopovers();
+                }
+                
+                new bootstrap.Modal(document.getElementById('candidatesModal')).show();
+            } catch (error) {
+                console.error('Error loading top candidates:', error);
+                alert('Error loading top candidates. Please check the console for details.');
             }
         }
 
@@ -444,12 +526,37 @@
             }
         }
 
-        // Add this new function for handling contact info display
-        function toggleContactInfo(button, candidateId) {
-            const contactInfo = document.getElementById(`contact-${candidateId}`).innerHTML;
-            const popover = bootstrap.Popover.getInstance(button);
-            popover.setContent({ '.popover-body': contactInfo });
+        // Helper function for match score colors
+        function getMatchScoreColor(score) {
+            if (score >= 0.8) return '#28a745'; // Green for excellent match
+            if (score >= 0.6) return '#17a2b8'; // Blue for good match
+            if (score >= 0.4) return '#ffc107'; // Yellow for moderate match
+            return '#dc3545'; // Red for low match
         }
+
+        // Initialize popovers after loading candidates
+        function initializePopovers() {
+            const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                return new bootstrap.Popover(popoverTriggerEl, {
+                    placement: 'left',
+                    sanitize: false
+                });
+            });
+        }
+
+        // Add click handler to close other popovers when opening a new one
+        document.addEventListener('click', function(e) {
+            const popoverTriggers = document.querySelectorAll('[data-bs-toggle="popover"]');
+            popoverTriggers.forEach(trigger => {
+                if (!trigger.contains(e.target)) {
+                    const popover = bootstrap.Popover.getInstance(trigger);
+                    if (popover) {
+                        popover.hide();
+                    }
+                }
+            });
+        });
 
         // Load vacancies when page loads
         document.addEventListener('DOMContentLoaded', loadVacancies);
@@ -457,7 +564,7 @@
         function viewResume(resumePath) {
             // Create a full URL for the resume
             const filename = resumePath.split('/').pop();
-            const resumeUrl = `http://localhost:3000/resumes/${filename}`;
+            const resumeUrl = `${API_BASE_URL}/resumes/${filename}`;
             window.open(resumeUrl, '_blank');
         }
     </script>
@@ -538,27 +645,27 @@
             padding: 1.5rem;
         }
 
-        .contact-info-popover p {
-            margin-bottom: 0.5rem;
-            white-space: nowrap;
-        }
-
-        .contact-info-popover p:last-child {
-            margin-bottom: 0;
-        }
-
-        .contact-info-popover i {
-            width: 20px;
-            color: #6c757d;
-        }
-
-        .contact-info-popover a {
-            color: #0d6efd;
+        .contact-info a {
+            color: #333;
             text-decoration: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .contact-info a:hover {
+            background-color: #f0f0f0;
+            color: #0d6efd;
+        }
+        .contact-info i {
+            width: 20px;
+        }
+        .popover {
+            max-width: 300px;
         }
 
-        .contact-info-popover a:hover {
-            text-decoration: underline;
+        .match-score {
+            font-weight: 600;
+            font-size: 0.9rem;
         }
     </style>
 </body>

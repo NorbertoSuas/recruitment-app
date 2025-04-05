@@ -7,6 +7,7 @@ const multer = require('multer');
 const { postToAllPlatforms } = require('./services/external-postings');
 const settingsRoutes = require('./routes/settings');
 const fs = require('fs');
+const CandidateMatcher = require('./AI_model/CandidateMatcher');
 require('dotenv').config();
 
 const app = express();
@@ -370,6 +371,70 @@ app.get('/api/vacancies/:id/candidates', async (req, res) => {
                 details: err.message 
             });
         }
+});
+
+// Get top candidates for a specific vacancy
+app.get('/api/vacancies/:id/top-candidates', async (req, res) => {
+    try {
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB is not connected. Please try again later.');
+        }
+
+        // Get the vacancy details
+        const vacancy = await Vacancy.findById(req.params.id);
+        if (!vacancy) {
+            return res.status(404).json({ error: 'Vacancy not found' });
+        }
+
+        // Get all candidates for this vacancy
+        const candidates = await Candidate.find({ 
+            applied_for: req.params.id
+        });
+
+        // Initialize the AI model
+        const matcher = new CandidateMatcher();
+        
+        // Calculate match scores for all candidates
+        const candidatesWithScores = await Promise.all(candidates.map(async (candidate) => {
+            const matchResult = await matcher.match_candidate(
+                {
+                    id: candidate._id,
+                    description: candidate.current_position,
+                    skills: candidate.skills,
+                    experience: candidate.experience.toString(),
+                    education: candidate.education
+                },
+                {
+                    id: vacancy._id,
+                    description: vacancy.description,
+                    skills: vacancy.skills_required.join(', '),
+                    experience: vacancy.experience_level,
+                    education: vacancy.requirements
+                }
+            );
+
+            return {
+                ...candidate.toObject(),
+                match_score: matchResult.match_score
+            };
+        }));
+
+        // Sort candidates by match score
+        candidatesWithScores.sort((a, b) => b.match_score - a.match_score);
+
+        // Get top 30% of candidates
+        const topCount = Math.ceil(candidatesWithScores.length * 0.3);
+        const topCandidates = candidatesWithScores.slice(0, topCount);
+
+        console.log(`Successfully fetched top ${topCandidates.length} candidates for vacancy ${req.params.id}`);
+        res.json(topCandidates);
+    } catch (err) {
+        console.error('Error fetching top candidates for vacancy:', err);
+        res.status(500).json({ 
+            error: 'Error fetching top candidates',
+            details: err.message 
+        });
+    }
 });
 
 // Resume upload endpoint
