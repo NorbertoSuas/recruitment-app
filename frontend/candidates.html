@@ -141,6 +141,14 @@
                 </h5>
             </div>
             <div class="card-body">
+                <div class="mb-3">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" class="form-control" id="candidatesSearch" placeholder="Search by name or skills...">
+                    </div>
+                </div>
                 <div id="candidatesList" class="row g-4">
                     <!-- Candidates will be loaded here dynamically -->
                 </div>
@@ -304,99 +312,85 @@
         // Load and display candidates
         async function loadCandidates() {
             try {
-                const [candidatesResponse, vacanciesResponse] = await Promise.all([
-                    fetch('http://localhost:3000/api/candidates'),
-                    fetch('http://localhost:3000/api/vacancies')
-                ]);
-
-                if (candidatesResponse.ok && vacanciesResponse.ok) {
-                    const candidates = await candidatesResponse.json();
-                    const vacancies = await vacanciesResponse.json();
+                const response = await fetch('http://localhost:3000/api/candidates');
+                if (response.ok) {
+                    const candidates = await response.json();
                     
-                    // Check and assign vacancies to candidates who don't have one
-                    for (const candidate of candidates) {
-                        if (!candidate.applied_for) {
-                            // Find a suitable vacancy based on candidate's skills
-                            const suitableVacancy = findSuitableVacancy(candidate, vacancies);
-                            if (suitableVacancy) {
-                                await assignVacancyToCandidate(candidate._id, suitableVacancy._id);
-                                candidate.applied_for = suitableVacancy._id;
-                                candidate.applied_for_title = suitableVacancy.title;
-                            }
-                        }
-                    }
-
-                    const candidatesList = document.getElementById('candidatesList');
+                    // Store candidates in a variable for filtering
+                    window.allCandidates = candidates;
                     
-                    candidatesList.innerHTML = candidates.map(candidate => `
-                        <div class="col-md-6">
-                            <div class="card candidate-card h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title">${candidate.first_name} ${candidate.last_name}</h5>
-                                    <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
-                                    <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
-                                    <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
-                                    <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
-                                    <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
-                                    <p><i class="bi bi-tools me-2"></i>${candidate.skills}</p>
-                                    <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
-                                    <p><i class="bi bi-tag me-2"></i>Status: ${candidate.status}</p>
-                                    <p><i class="bi bi-calendar me-2"></i>Applied: ${new Date(candidate.applied_at).toLocaleDateString()}</p>
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <div class="btn-group">
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewResume('${candidate.resume}')">
-                                                <i class="bi bi-eye"></i> View Resume
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-success" onclick="updateStatus('${candidate._id}', 'Interviewed')">
-                                                <i class="bi bi-check-circle"></i> Interview
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('${candidate._id}', 'Rejected')">
-                                                <i class="bi bi-x-circle"></i> Reject
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                    // Add event listener for search
+                    document.getElementById('candidatesSearch').addEventListener('input', (e) => {
+                        filterCandidatesList(e.target.value);
+                    });
+                    
+                    // Initial display of candidates
+                    displayCandidatesList(candidates);
                 }
             } catch (error) {
                 console.error('Error loading candidates:', error);
             }
         }
 
-        // Helper function to find a suitable vacancy based on candidate's skills
-        function findSuitableVacancy(candidate, vacancies) {
-            const candidateSkills = candidate.skills.toLowerCase().split(',').map(s => s.trim());
+        // Function to filter candidates
+        function filterCandidatesList(searchTerm) {
+            if (!window.allCandidates) return;
             
-            // Sort vacancies by matching skills
-            const rankedVacancies = vacancies.map(vacancy => {
-                const vacancySkills = vacancy.skills_required.map(s => s.toLowerCase());
-                const matchingSkills = candidateSkills.filter(skill => 
-                    vacancySkills.some(vs => vs.includes(skill) || skill.includes(vs))
-                ).length;
-                return { vacancy, matchScore: matchingSkills };
-            }).sort((a, b) => b.matchScore - a.matchScore);
-
-            return rankedVacancies[0]?.vacancy;
+            const filteredCandidates = window.allCandidates.filter(candidate => {
+                const searchLower = searchTerm.toLowerCase();
+                const fullName = `${candidate.first_name} ${candidate.last_name}`.toLowerCase();
+                const skills = candidate.skills.toLowerCase();
+                
+                return fullName.includes(searchLower) || skills.includes(searchLower);
+            });
+            
+            displayCandidatesList(filteredCandidates);
         }
 
-        // Helper function to assign a vacancy to a candidate
-        async function assignVacancyToCandidate(candidateId, vacancyId) {
-            try {
-                const response = await fetch(`http://localhost:3000/api/candidates/${candidateId}/assign-vacancy`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ vacancyId })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to assign vacancy');
-                }
-            } catch (error) {
-                console.error('Error assigning vacancy:', error);
+        // Function to display candidates
+        function displayCandidatesList(candidates) {
+            const candidatesList = document.getElementById('candidatesList');
+            
+            if (candidates.length === 0) {
+                candidatesList.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No candidates found matching your search.</p>
+                    </div>
+                `;
+            } else {
+                candidatesList.innerHTML = candidates.map(candidate => `
+                    <div class="col-md-6">
+                        <div class="card candidate-card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${candidate.first_name} ${candidate.last_name}</h5>
+                                <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
+                                <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
+                                <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
+                                <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
+                                <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
+                                <p><i class="bi bi-tools me-2"></i>${candidate.skills}</p>
+                                <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
+                                <p><i class="bi bi-tag me-2"></i>Status: ${candidate.status}</p>
+                                <p><i class="bi bi-calendar me-2"></i>Applied: ${new Date(candidate.applied_at).toLocaleDateString()}</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="btn-group">
+                                        ${candidate.resume ? `
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewResume('${candidate.resume}')">
+                                                <i class="bi bi-eye"></i> View Resume
+                                            </button>
+                                        ` : ''}
+                                        <button class="btn btn-sm btn-outline-success" onclick="updateStatus('${candidate._id}', 'Interviewed')">
+                                            <i class="bi bi-check-circle"></i> Interview
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('${candidate._id}', 'Rejected')">
+                                            <i class="bi bi-x-circle"></i> Reject
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
             }
         }
 
@@ -505,6 +499,60 @@
         .candidate-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Enhanced Search Bar Styling */
+        .input-group {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:focus-within {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .input-group .input-group-text {
+            background-color: #fff;
+            border: 2px solid #e91e63;
+            border-right: none;
+            border-radius: 12px 0 0 12px;
+            padding: 0.75rem 1rem;
+        }
+
+        .input-group .input-group-text i {
+            color: #e91e63;
+            font-size: 1.1rem;
+        }
+
+        .input-group .form-control {
+            border: 2px solid #e91e63;
+            border-left: none;
+            border-radius: 0 12px 12px 0;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            background-color: #fff;
+        }
+
+        .input-group .form-control:focus {
+            box-shadow: none;
+            border-color: #e91e63;
+        }
+
+        .input-group .form-control::placeholder {
+            color: #9e9e9e;
+            font-style: italic;
+        }
+
+        /* Add a subtle animation on hover */
+        .input-group:hover {
+            transform: translateY(-1px);
+        }
+
+        .input-group:hover .input-group-text i {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
         }
 
         .candidate-card .card-title {

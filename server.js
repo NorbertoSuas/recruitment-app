@@ -53,7 +53,12 @@ app.use(session({
 }));
 
 // More permissive CORS configuration
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:3000', 'null'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 
 // Middleware
 app.use(express.json());
@@ -69,7 +74,16 @@ app.get('/resumes/:filename', (req, res) => {
         // Check if file exists
         if (!fs.existsSync(resumePath)) {
             console.error(`Resume file not found: ${resumePath}`);
-            return res.status(404).json({ error: 'Resume file not found' });
+            // Try alternative path
+            const altPath = path.join(__dirname, 'resumes', req.params.filename);
+            if (!fs.existsSync(altPath)) {
+                return res.status(404).json({ error: 'Resume file not found' });
+            }
+            // Use alternative path if found
+            const fileStream = fs.createReadStream(altPath);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', 'inline; filename=' + req.params.filename);
+            return fileStream.pipe(res);
         }
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'inline; filename=' + req.params.filename);
@@ -359,18 +373,18 @@ app.get('/api/vacancies/:id/candidates', async (req, res) => {
         const candidates = await Candidate.find({ 
             applied_for: req.params.id
         })
-        .select('-resume') // Exclude resume field for performance
-        .populate('applied_for', 'title'); // Populate the vacancy title
+        .select('first_name last_name email phone linkedin experience skills status resume')
+        .populate('applied_for', 'title');
 
         console.log(`Successfully fetched ${candidates.length} candidates for vacancy ${req.params.id}`);
         res.json(candidates);
     } catch (err) {
         console.error('Error fetching candidates for vacancy:', err);
         res.status(500).json({ 
-                error: 'Error fetching candidates',
-                details: err.message 
-            });
-        }
+            error: 'Error fetching candidates',
+            details: err.message 
+        });
+    }
 });
 
 // Get top candidates for a specific vacancy

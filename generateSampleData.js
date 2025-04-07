@@ -36,6 +36,30 @@ const vacancies = [
             'UI Design, Prototyping, User Testing',
             'Design Systems, Information Architecture'
         ]
+    },
+    {
+        title: 'Senior Accountant',
+        skills: [
+            'Financial Reporting, GAAP, Tax Compliance',
+            'Budgeting, Forecasting, Financial Analysis',
+            'ERP Systems, Audit, Internal Controls'
+        ]
+    },
+    {
+        title: 'Sales Manager',
+        skills: [
+            'Sales Strategy, CRM Management, Business Development',
+            'Team Leadership, Sales Forecasting, Negotiation',
+            'Market Analysis, Customer Relationship Management'
+        ]
+    },
+    {
+        title: 'Marketing Specialist',
+        skills: [
+            'Digital Marketing, Social Media, Content Strategy',
+            'SEO/SEM, Analytics, Campaign Management',
+            'Brand Management, Market Research, Email Marketing'
+        ]
     }
 ];
 
@@ -51,7 +75,10 @@ const educationLevels = [
 const experiences = {
     'Senior Software Engineer': { min: 5, max: 12 },
     'Product Manager': { min: 4, max: 10 },
-    'UX Designer': { min: 3, max: 8 }
+    'UX Designer': { min: 3, max: 8 },
+    'Senior Accountant': { min: 5, max: 15 },
+    'Sales Manager': { min: 4, max: 12 },
+    'Marketing Specialist': { min: 3, max: 10 }
 };
 
 // Candidate Schema
@@ -138,7 +165,10 @@ function generateRandomCandidate(position) {
     const experienceRanges = {
         'Senior Software Engineer': { min: 5, max: 12 },
         'Product Manager': { min: 4, max: 10 },
-        'UX Designer': { min: 3, max: 8 }
+        'UX Designer': { min: 3, max: 8 },
+        'Senior Accountant': { min: 5, max: 15 },
+        'Sales Manager': { min: 4, max: 12 },
+        'Marketing Specialist': { min: 3, max: 10 }
     };
     const range = experienceRanges[position];
     const experience = Math.floor(Math.random() * (range.max - range.min + 1)) + range.min;
@@ -154,7 +184,10 @@ function generateRandomCandidate(position) {
     const skillSets = {
         'Senior Software Engineer': ['Python', 'Django', 'PostgreSQL', 'AWS', 'Docker', 'Kubernetes', 'React', 'Node.js', 'System Design'],
         'Product Manager': ['Product Strategy', 'Agile', 'JIRA', 'User Research', 'Data Analysis', 'Roadmapping', 'Stakeholder Management'],
-        'UX Designer': ['Figma', 'Adobe XD', 'User Research', 'Wireframing', 'Prototyping', 'UI Design', 'Usability Testing']
+        'UX Designer': ['Figma', 'Adobe XD', 'User Research', 'Wireframing', 'Prototyping', 'UI Design', 'Usability Testing'],
+        'Senior Accountant': ['Financial Reporting', 'GAAP', 'Tax Compliance', 'Budgeting', 'Forecasting', 'Financial Analysis', 'ERP Systems', 'Audit', 'Internal Controls'],
+        'Sales Manager': ['Sales Strategy', 'CRM Management', 'Business Development', 'Team Leadership', 'Sales Forecasting', 'Negotiation', 'Market Analysis', 'Customer Relationship Management'],
+        'Marketing Specialist': ['Digital Marketing', 'Social Media', 'Content Strategy', 'SEO/SEM', 'Analytics', 'Campaign Management', 'Brand Management', 'Market Research', 'Email Marketing']
     };
 
     // Select 4-6 random skills from the position's skill set
@@ -198,7 +231,7 @@ async function generateCandidates() {
         await fs.mkdir(resumesDir, { recursive: true });
         
         // Generate 30 candidates for each position
-        const positions = ['Senior Software Engineer', 'Product Manager', 'UX Designer'];
+        const positions = ['Senior Software Engineer', 'Product Manager', 'UX Designer', 'Senior Accountant', 'Sales Manager', 'Marketing Specialist'];
         const candidates = [];
         positions.forEach(position => {
             for (let i = 0; i < 30; i++) {
@@ -230,7 +263,7 @@ async function generateCandidates() {
             }
         }
         
-        console.log('\nSuccessfully generated 90 candidates with resumes');
+        console.log('\nSuccessfully generated 180 candidates with resumes');
         process.exit(0);
     } catch (error) {
         console.error('Error generating candidates:', error);
