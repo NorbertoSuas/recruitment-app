@@ -1,15 +1,53 @@
+/* Dark Mode Styles */
+[data-theme="dark"] {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --border-color: #404040;
+    --card-bg: #2d2d2d;
+    --card-border: #404040;
+    --input-bg: #2d2d2d;
+    --input-border: #404040;
+    --input-text: #ffffff;
+    --sidebar-bg: #1a1a1a;
+    --sidebar-text: #ffffff;
+    --sidebar-hover: #2d2d2d;
+    --table-bg: #2d2d2d;
+    --table-border: #404040;
+    --table-hover: #3d3d3d;
+}
+
+/* Light Mode Styles (default) */
 :root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --border-color: #dee2e6;
+    --card-bg: #ffffff;
+    --card-border: #dee2e6;
+    --input-bg: #ffffff;
+    --input-border: #ced4da;
+    --input-text: #212529;
+    --sidebar-bg: #f8f9fa;
+    --sidebar-text: #212529;
+    --sidebar-hover: #e9ecef;
+    --table-bg: #ffffff;
+    --table-border: #dee2e6;
+    --table-hover: #f8f9fa;
     --sidebar-width: 250px;
     --tm-red: #E31837;
     --tm-gray: #666666;
     --tm-light-gray: #f8f9fa;
-    --tm-border-color: #dee2e6;
 }
 
 body {
     min-height: 100vh;
-    background-color: var(--tm-light-gray);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Sidebar Styles */
@@ -19,7 +57,8 @@ body {
     top: 0;
     left: 0;
     height: 100vh;
-    background-color: white;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
     padding-top: 1rem;
     z-index: 1000;
     box-shadow: 2px 0 5px rgba(0,0,0,0.05);
@@ -29,7 +68,7 @@ body {
     text-align: center;
     padding: 1.5rem 1rem;
     margin-bottom: 1rem;
-    border-bottom: 1px solid var(--tm-border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .sidebar-logo img {
@@ -48,7 +87,7 @@ body {
     display: flex;
     align-items: center;
     padding: 0.8rem 1.5rem;
-    color: var(--tm-gray);
+    color: var(--sidebar-text);
     text-decoration: none;
     transition: all 0.3s ease;
 }
@@ -60,12 +99,11 @@ body {
 }
 
 .sidebar-nav li a:hover {
-    background-color: var(--tm-light-gray);
-    color: var(--tm-red);
+    background-color: var(--sidebar-hover);
 }
 
 .sidebar-nav li a.active {
-    background-color: var(--tm-light-gray);
+    background-color: var(--sidebar-hover);
     color: var(--tm-red);
     border-right: 3px solid var(--tm-red);
 }
@@ -84,16 +122,16 @@ body {
 
 /* Card Styles */
 .tm-card {
-    background: white;
+    background-color: var(--card-bg);
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid var(--tm-border-color);
+    border: 1px solid var(--card-border);
 }
 
 .tm-card .card-header {
-    background-color: white;
+    background-color: var(--card-bg);
     padding: 1.25rem;
-    border-bottom: 1px solid var(--tm-border-color);
+    border-bottom: 1px solid var(--border-color);
     border-radius: 10px 10px 0 0;
 }
 
@@ -115,13 +153,16 @@ body {
 }
 
 .form-control, .form-select {
-    border-color: var(--tm-border-color);
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
     padding: 0.5rem 0.75rem;
+    color: var(--input-text);
 }
 
 .form-control:focus, .form-select:focus {
-    border-color: var(--tm-red);
-    box-shadow: 0 0 0 0.2rem rgba(227, 24, 55, 0.25);
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
 }
 
 /* Button Styles */
@@ -193,7 +234,7 @@ body {
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid var(--tm-border-color);
+    border: 1px solid var(--border-color);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -204,7 +245,7 @@ body {
 
 .vacancy-card-header {
     padding: 1.25rem;
-    border-bottom: 1px solid var(--tm-border-color);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .vacancy-title {
@@ -224,7 +265,7 @@ body {
 
 .vacancy-card-footer {
     padding: 1.25rem;
-    border-top: 1px solid var(--tm-border-color);
+    border-top: 1px solid var(--border-color);
     display: flex;
     gap: 0.5rem;
 }
@@ -260,16 +301,24 @@ body {
 /* Table Styles */
 .table {
     margin-bottom: 0;
+    background-color: var(--table-bg);
+    color: var(--text-primary);
 }
 
 .table th {
     color: var(--tm-gray);
     font-weight: 600;
     border-bottom-width: 1px;
+    border-color: var(--table-border);
 }
 
 .table td {
     vertical-align: middle;
+    border-color: var(--table-border);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-hover);
 }
 
 /* Responsive Styles */
@@ -361,4 +410,39 @@ body {
 .card-subtitle {
     margin: 0;
     font-weight: 500;
+}
+
+/* Dark mode specific adjustments */
+[data-theme="dark"] .text-muted {
+    color: #a0a0a0 !important;
+}
+
+[data-theme="dark"] .card-header {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-header {
+    border-bottom-color: var(--border-color);
+}
+
+[data-theme="dark"] .modal-footer {
+    border-top-color: var(--border-color);
+}
+
+/* Existing styles */
+.candidate-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.candidate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 } 
