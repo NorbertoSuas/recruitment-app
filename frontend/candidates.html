@@ -107,9 +107,6 @@
                         <label class="form-label">Applied For</label>
                         <select class="form-select" name="vacancy" required>
                             <option value="">Select position</option>
-                            <option value="Senior Software Engineer">Senior Software Engineer</option>
-                            <option value="Product Manager">Product Manager</option>
-                            <option value="UX Designer">UX Designer</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -218,7 +215,9 @@
         document.getElementById('toggleCandidateForm').addEventListener('click', () => {
             const form = document.getElementById('candidateForm');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
-            loadVacancies(); // Load vacancies for the select dropdown
+            if (form.style.display === 'block') {
+                loadVacancies(); // Load vacancies when form is shown
+            }
         });
 
         document.getElementById('cancelCandidateForm').addEventListener('click', () => {
@@ -234,15 +233,22 @@
                     const vacancies = await response.json();
                     const select = document.querySelector('select[name="vacancy"]');
                     select.innerHTML = '<option value="">Select position</option>';
-                    vacancies.forEach(vacancy => {
+                    
+                    // Only show active vacancies
+                    const activeVacancies = vacancies.filter(v => v.status === 'Active');
+                    
+                    activeVacancies.forEach(vacancy => {
                         const option = document.createElement('option');
-                        option.value = vacancy._id;
+                        option.value = vacancy._id; // Use the vacancy ID as the value
                         option.textContent = vacancy.title;
                         select.appendChild(option);
                     });
+                } else {
+                    throw new Error('Failed to fetch vacancies');
                 }
             } catch (error) {
                 console.error('Error loading vacancies:', error);
+                alert('Error loading available positions. Please try again.');
             }
         }
 
@@ -258,9 +264,9 @@
                 location: formData.get('location'),
                 education: formData.get('education'),
                 current_position: formData.get('currentPosition'),
-                experience: formData.get('experience'),
+                experience: parseInt(formData.get('experience')),
                 skills: formData.get('skills'),
-                vacancy: formData.get('vacancy'),
+                applied_for: formData.get('vacancy'),
                 status: 'Pending'
             };
 
@@ -302,11 +308,12 @@
                     document.getElementById('newCandidateForm').reset();
                     loadCandidates();
                 } else {
-                    throw new Error('Failed to add candidate');
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to add candidate');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Error adding candidate');
+                alert(error.message || 'Error adding candidate');
             }
         });
 
@@ -327,9 +334,12 @@
                     
                     // Initial display of candidates
                     displayCandidatesList(candidates);
+                } else {
+                    throw new Error('Failed to fetch candidates');
                 }
             } catch (error) {
                 console.error('Error loading candidates:', error);
+                alert('Error loading candidates. Please try again.');
             }
         }
 
@@ -341,8 +351,11 @@
                 const searchLower = searchTerm.toLowerCase();
                 const fullName = `${candidate.first_name} ${candidate.last_name}`.toLowerCase();
                 const skills = candidate.skills.toLowerCase();
+                const appliedFor = candidate.applied_for ? candidate.applied_for.title.toLowerCase() : '';
                 
-                return fullName.includes(searchLower) || skills.includes(searchLower);
+                return fullName.includes(searchLower) || 
+                       skills.includes(searchLower) || 
+                       appliedFor.includes(searchLower);
             });
             
             displayCandidatesList(filteredCandidates);
@@ -361,32 +374,47 @@
             } else {
                 candidatesList.innerHTML = candidates.map(candidate => `
                     <div class="col-md-6">
-                        <div class="card candidate-card h-100">
+                        <div class="card h-100">
                             <div class="card-body">
                                 <h5 class="card-title">${candidate.first_name} ${candidate.last_name}</h5>
-                                <p><i class="bi bi-envelope me-2"></i>${candidate.email}</p>
-                                <p><i class="bi bi-telephone me-2"></i>${candidate.phone}</p>
-                                <p><i class="bi bi-briefcase me-2"></i>${candidate.experience} years experience</p>
-                                <p><i class="bi bi-geo-alt me-2"></i>${candidate.location}</p>
-                                <p><i class="bi bi-mortarboard me-2"></i>${candidate.education}</p>
-                                <p><i class="bi bi-tools me-2"></i>${candidate.skills}</p>
-                                <p><i class="bi bi-building me-2"></i>Applied for: ${candidate.vacancy}</p>
-                                <p><i class="bi bi-tag me-2"></i>Status: ${candidate.status}</p>
-                                <p><i class="bi bi-calendar me-2"></i>Applied: ${new Date(candidate.applied_at).toLocaleDateString()}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <div class="btn-group">
-                                        ${candidate.resume ? `
-                                            <button class="btn btn-sm btn-outline-primary" onclick="viewResume('${candidate.resume}')">
-                                                <i class="bi bi-eye"></i> View Resume
-                                            </button>
-                                        ` : ''}
-                                        <button class="btn btn-sm btn-outline-success" onclick="updateStatus('${candidate._id}', 'Interviewed')">
-                                            <i class="bi bi-check-circle"></i> Interview
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger" onclick="updateStatus('${candidate._id}', 'Rejected')">
-                                            <i class="bi bi-x-circle"></i> Reject
-                                        </button>
+                                <div class="candidate-info">
+                                    <p><i class="bi bi-envelope"></i>${candidate.email}</p>
+                                    <p><i class="bi bi-telephone"></i>${candidate.phone}</p>
+                                    <p><i class="bi bi-briefcase"></i>${candidate.experience} years experience</p>
+                                    <p><i class="bi bi-geo-alt"></i>${candidate.location}</p>
+                                    <p><i class="bi bi-mortarboard"></i>${candidate.education}</p>
+                                </div>
+
+                                <div class="skills-section mb-4">
+                                    <h6 class="section-title">Skills</h6>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        ${candidate.skills.split(',').map(skill => 
+                                            `<span class="badge">${skill.trim()}</span>`
+                                        ).join('')}
                                     </div>
+                                </div>
+
+                                <div class="application-section">
+                                    <h6 class="section-title">Application Details</h6>
+                                    <div class="candidate-info">
+                                        <p><i class="bi bi-building"></i>Applied for: ${candidate.applied_for && candidate.applied_for.title ? candidate.applied_for.title : 'Not assigned'}</p>
+                                        <p><i class="bi bi-tag"></i>Status: <span class="badge bg-${getStatusColor(candidate.status)}">${candidate.status}</span></p>
+                                        <p><i class="bi bi-calendar"></i>Applied: ${new Date(candidate.applied_at).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4 d-flex gap-2">
+                                    ${candidate.resume ? `
+                                        <button class="btn btn-primary flex-grow-1" onclick="viewResume('${candidate.resume}')">
+                                            <i class="bi bi-file-pdf"></i>View Resume
+                                        </button>
+                                    ` : ''}
+                                    <button class="btn btn-success flex-grow-1" onclick="updateStatus('${candidate._id}', 'Interviewed')">
+                                        <i class="bi bi-check-circle"></i>Interview
+                                    </button>
+                                    <button class="btn btn-danger flex-grow-1" onclick="updateStatus('${candidate._id}', 'Rejected')">
+                                        <i class="bi bi-x-circle"></i>Reject
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -515,7 +543,7 @@
         }
 
         .input-group .input-group-text {
-            background-color: #fff;
+            background-color: var(--card-bg);
             border: 2px solid #e91e63;
             border-right: none;
             border-radius: 12px 0 0 12px;
@@ -533,7 +561,8 @@
             border-radius: 0 12px 12px 0;
             padding: 0.75rem 1rem;
             font-size: 1rem;
-            background-color: #fff;
+            background-color: var(--card-bg);
+            color: var(--text-primary);
         }
 
         .input-group .form-control:focus {
@@ -542,7 +571,7 @@
         }
 
         .input-group .form-control::placeholder {
-            color: #9e9e9e;
+            color: var(--text-secondary);
             font-style: italic;
         }
 
@@ -557,18 +586,18 @@
         }
 
         .candidate-card .card-title {
-            color: #2c3e50;
+            color: var(--text-primary);
             margin-bottom: 0.25rem;
         }
 
         .candidate-info p {
             margin-bottom: 0.5rem;
-            color: #555;
+            color: var(--text-primary);
             font-size: 0.9rem;
         }
 
         .candidate-info i {
-            color: #6c757d;
+            color: var(--text-secondary);
             width: 20px;
         }
 
@@ -576,6 +605,8 @@
             font-size: 0.8rem;
             font-weight: 500;
             padding: 0.5em 1em;
+            background-color: var(--skill-bg);
+            color: var(--skill-text);
         }
 
         .action-buttons {

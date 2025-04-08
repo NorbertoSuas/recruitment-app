@@ -8,7 +8,7 @@
     
     /* Light theme defaults */
     --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
+    --bg-secondary: #ffffff;
     --text-primary: #212529;
     --text-secondary: #6c757d;
     --border-color: #dee2e6;
@@ -22,11 +22,15 @@
     --sidebar-hover: #e9ecef;
     --table-bg: #ffffff;
     --table-border: #dee2e6;
-    --table-hover: #f8f9fa;
-    --skill-bg: var(--tm-light-gray);
-    --skill-text: var(--tm-gray);
-    --description-text: var(--tm-gray);
-    --meta-text: var(--tm-gray);
+    --table-hover: rgba(0, 0, 0, 0.075);
+    --skill-bg: #e9ecef;
+    --skill-text: #495057;
+    --description-text: #6c757d;
+    --meta-text: #6c757d;
+    --section-title: #212529;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    --hover-bg: #f8f9fa;
 }
 
 /* Dark theme overrides */
@@ -46,13 +50,17 @@
     --sidebar-hover: #2d2d2d;
     --table-bg: #2d2d2d;
     --table-border: #404040;
-    --table-hover: #3d3d3d;
+    --table-hover: rgba(255, 255, 255, 0.075);
     --tm-light-gray: #2d2d2d;
     --tm-gray: #e0e0e0;
     --skill-bg: #404040;
     --skill-text: #ffffff;
     --description-text: #e0e0e0;
     --meta-text: #e0e0e0;
+    --section-title: #ffffff;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    --card-hover-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    --hover-bg: #3d3d3d;
 }
 
 /* Base Styles */
@@ -130,16 +138,17 @@ body {
 }
 
 .section-title {
-    color: var(--tm-gray);
+    color: var(--text-primary);
+    font-size: 1rem;
     font-weight: 600;
-    margin: 0;
+    margin-bottom: 0.75rem;
 }
 
 /* Card Styles */
 .tm-card {
     background-color: var(--card-bg);
     border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    box-shadow: var(--card-shadow);
     border: 1px solid var(--card-border);
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -186,11 +195,25 @@ body {
 .btn-primary {
     background-color: var(--tm-red);
     border-color: var(--tm-red);
+    color: #ffffff;
 }
 
 .btn-primary:hover {
     background-color: #c41530;
     border-color: #c41530;
+    color: #ffffff;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: #ffffff;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    color: #ffffff;
 }
 
 .btn-outline-primary {
@@ -201,6 +224,7 @@ body {
 .btn-outline-primary:hover {
     background-color: var(--tm-red);
     border-color: var(--tm-red);
+    color: #ffffff;
 }
 
 /* Status Badge Styles */
@@ -247,57 +271,77 @@ body {
 }
 
 /* Vacancy Card Styles */
-.vacancy-card {
-    background: var(--card-bg);
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.card {
+    background-color: var(--card-bg);
     border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.vacancy-card:hover {
+.card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: var(--card-hover-shadow);
 }
 
-.vacancy-card-header {
-    padding: 1.25rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.vacancy-title {
+.card-title {
     color: var(--text-primary);
-    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
     font-weight: 600;
+    margin-bottom: 1rem;
 }
 
-.vacancy-card-body {
-    padding: 1.25rem;
-}
-
-.vacancy-card-body p {
-    margin-bottom: 0.75rem;
+.vacancy-info p {
+    margin-bottom: 0.5rem;
     color: var(--text-primary);
-}
-
-.vacancy-card-footer {
-    padding: 1.25rem;
-    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
     display: flex;
+    align-items: center;
     gap: 0.5rem;
 }
 
-.vacancy-card .meta-info {
-    color: var(--meta-text);
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
+.vacancy-info i {
+    color: var(--text-secondary);
+    width: 20px;
+    font-size: 1rem;
 }
 
-.vacancy-card .description,
-.vacancy-card .responsibilities,
-.vacancy-card .requirements {
-    color: var(--description-text);
-    margin-bottom: 1rem;
+.description-section,
+.responsibilities-section,
+.requirements-section {
+    margin-bottom: 1.25rem;
+}
+
+.text-muted {
+    color: var(--description-text) !important;
+}
+
+.skills-section .badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5em 1em;
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
+}
+
+.benefits-section .badge {
+    background-color: var(--tm-light-gray);
+    color: var(--text-secondary);
+}
+
+.btn-primary,
+.btn-success {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary i,
+.btn-success i {
+    font-size: 1rem;
 }
 
 /* Skills Tags */
@@ -319,24 +363,29 @@ body {
 /* Table Styles */
 .table {
     margin-bottom: 0;
-    background-color: var(--table-bg);
+    background-color: var(--bg-secondary);
     color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
-.table th {
+.table thead th {
+    background-color: var(--bg-secondary);
     color: var(--text-primary);
+    border-bottom-color: var(--border-color);
     font-weight: 600;
-    border-bottom-width: 1px;
-    border-color: var(--table-border);
+    padding: 1rem;
 }
 
-.table td {
-    vertical-align: middle;
-    border-color: var(--table-border);
+.table tbody td {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+    padding: 1rem;
 }
 
 .table-hover tbody tr:hover {
-    background-color: var(--table-hover);
+    background-color: var(--hover-bg) !important;
+    color: var(--text-primary);
 }
 
 /* Candidate Avatar */
@@ -409,10 +458,18 @@ body {
 }
 
 .modal-header {
+    background-color: var(--bg-secondary);
     border-bottom-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+.modal-body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 .modal-footer {
+    background-color: var(--bg-secondary);
     border-top-color: var(--border-color);
 }
 
@@ -434,18 +491,19 @@ body {
 }
 
 /* Candidate Card Styles */
-.candidate-info {
-    color: var(--meta-text);
-    font-size: 0.9rem;
+.candidate-info p {
     margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .candidate-info i {
-    color: var(--meta-text);
-    width: 16px;
+    color: var(--text-secondary);
+    width: 20px;
+    font-size: 1rem;
 }
 
 .candidate-name {
@@ -453,6 +511,12 @@ body {
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
+}
+
+.application-section .badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5em 1em;
 }
 
 /* Status Badge Styles */
@@ -500,6 +564,109 @@ body {
     transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Skills and Badges */
+.skills-section .badge,
+.application-section .badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5em 1em;
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
+    border-radius: 15px;
+}
+
+/* Status Badge Colors */
+.badge.bg-warning {
+    background-color: #856404 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-info {
+    background-color: #0f6674 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-success {
+    background-color: #1e7e34 !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-danger {
+    background-color: #a71d2a !important;
+    color: #ffffff !important;
+}
+
+/* Button Text */
+.btn {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn i {
+    font-size: 1rem;
+}
+
+/* Table Styles */
+.table thead th {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    border-bottom-color: var(--border-color);
+    font-weight: 600;
+}
+
+.table tbody td {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: var(--table-hover);
+    color: var(--text-primary);
+}
+
+.table .badge {
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.5em 1em;
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
+}
+
+.contact-info a {
+    color: var(--text-primary);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.contact-info a:hover {
+    color: var(--tm-red);
+}
+
+.contact-info i {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.match-score {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Button group styles */
+.btn-group .btn {
+    border-color: var(--border-color);
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+}
+
 /* Responsive Styles */
 @media (max-width: 768px) {
     .sidebar {
@@ -518,4 +685,117 @@ body {
         margin-left: 60px;
         padding: 1rem;
     }
+}
+
+/* Form Input Styles */
+.form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--input-text);
+}
+
+.form-control:focus {
+    background-color: var(--input-bg);
+    border-color: var(--tm-red);
+    color: var(--input-text);
+    box-shadow: 0 0 0 0.2rem rgba(233, 30, 99, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Salary Range Input Styles */
+input[type="number"].form-control {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+}
+
+input[type="number"].form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--tm-red);
+}
+
+/* Select Input Styles */
+select.form-control {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--input-border);
+}
+
+select.form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--input-text);
+    border-color: var(--tm-red);
+}
+
+/* Input Group Styles */
+.input-group {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.input-group:focus-within {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+.input-group .input-group-text {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+    padding: 0.75rem 1rem;
+}
+
+.input-group .form-control {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+.input-group .form-control:focus {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    box-shadow: none;
+}
+
+.input-group .form-control::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.input-group select.form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+.input-group select.form-select:focus {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+/* Salary Range Input Group */
+.salary-range .input-group-text {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+.salary-range .form-control,
+.salary-range .form-select {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
+    color: var(--text-primary);
+}
+
+.salary-range .form-control:focus,
+.salary-range .form-select:focus {
+    background-color: var(--input-bg);
+    border-color: var(--tm-red);
+    color: var(--text-primary);
 } 

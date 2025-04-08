@@ -136,12 +136,21 @@ const candidateSchema = new mongoose.Schema({
     education: { type: String, required: true },
     location: { type: String, required: true },
     skills: { type: String, required: true },
-    resume: { type: String, required: true }, // Path to resume file
+    resume: { type: String }, // Made resume optional
     status: { type: String, default: 'Pending' },
     applied_at: { type: Date, default: Date.now },
-    applied_for: { type: mongoose.Schema.Types.ObjectId, ref: 'Vacancy' }, // Reference to the vacancy
+    applied_for: { type: mongoose.Schema.Types.ObjectId, ref: 'Vacancy', required: true },
     current_position: String
-}, { timestamps: true });
+}, { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+// Add virtual field for applied_for_title
+candidateSchema.virtual('applied_for_title').get(function() {
+    return this.populated('applied_for') ? this.applied_for.title : undefined;
+});
 
 const Candidate = mongoose.model('Candidate', candidateSchema);
 
@@ -188,37 +197,49 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.get('/api/candidates', async (req, res) => {
     try {
-        // Check MongoDB connection
-        if (mongoose.connection.readyState !== 1) {
-            throw new Error('MongoDB is not connected. Please try again later.');
-        }
-
-        console.log('Received GET request to /api/candidates');
-        const candidates = await Candidate.find({});
-        console.log(`Successfully fetched ${candidates.length} candidates`);
+        const candidates = await Candidate.find()
+            .populate({
+                path: 'applied_for',
+                select: 'title company' // Only get the needed fields
+            })
+            .exec();
         res.json(candidates);
-    } catch (err) {
-        console.error('Error fetching candidates:', err);
-        res.status(500).json({ 
-            error: 'Error fetching candidates',
-            details: err.message,
-            mongoStatus: mongoose.connection.readyState
-        });
+    } catch (error) {
+        console.error('Error fetching candidates:', error);
+        res.status(500).json({ error: 'Failed to fetch candidates' });
+    }
+});
+
+// Get single candidate
+app.get('/api/candidates/:id', async (req, res) => {
+    try {
+        const candidate = await Candidate.findById(req.params.id)
+            .populate({
+                path: 'applied_for',
+                select: 'title company'
+            })
+            .exec();
+        if (!candidate) {
+            return res.status(404).json({ error: 'Candidate not found' });
+        }
+        res.json(candidate);
+    } catch (error) {
+        console.error('Error fetching candidate:', error);
+        res.status(500).json({ error: 'Failed to fetch candidate' });
     }
 });
 
 // Add new candidate
 app.post('/api/candidates', async (req, res) => {
     try {
-        const newCandidate = new Candidate(req.body);
-        await newCandidate.save();
-        res.status(201).json(newCandidate);
-    } catch (err) {
-        console.error('Error creating candidate:', err);
-        res.status(500).json({ 
-            error: 'Error creating candidate',
-            details: err.message 
-        });
+        const candidateData = req.body;
+        const candidate = new Candidate(candidateData);
+        await candidate.save();
+        await candidate.populate('applied_for');
+        res.status(201).json(candidate);
+    } catch (error) {
+        console.error('Error creating candidate:', error);
+        res.status(500).json({ error: 'Failed to create candidate' });
     }
 });
 
