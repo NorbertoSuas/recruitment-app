@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to apply theme
     function applyTheme(theme) {
         document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
     }
 
     // Check for saved theme preference
