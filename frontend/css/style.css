@@ -23,6 +23,10 @@
     --table-bg: #ffffff;
     --table-border: #dee2e6;
     --table-hover: #f8f9fa;
+    --skill-bg: var(--tm-light-gray);
+    --skill-text: var(--tm-gray);
+    --description-text: var(--tm-gray);
+    --meta-text: var(--tm-gray);
 }
 
 /* Dark theme overrides */
@@ -30,7 +34,7 @@
     --bg-primary: #1a1a1a;
     --bg-secondary: #2d2d2d;
     --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
+    --text-secondary: #e0e0e0;
     --border-color: #404040;
     --card-bg: #2d2d2d;
     --card-border: #404040;
@@ -44,6 +48,11 @@
     --table-border: #404040;
     --table-hover: #3d3d3d;
     --tm-light-gray: #2d2d2d;
+    --tm-gray: #e0e0e0;
+    --skill-bg: #404040;
+    --skill-text: #ffffff;
+    --description-text: #e0e0e0;
+    --meta-text: #e0e0e0;
 }
 
 /* Base Styles */
@@ -144,7 +153,7 @@ body {
 
 .tm-card .card-header h5 {
     margin: 0;
-    color: var(--tm-gray);
+    color: var(--text-primary);
     font-weight: 600;
 }
 
@@ -154,7 +163,7 @@ body {
 
 /* Form Styles */
 .form-label {
-    color: var(--tm-gray);
+    color: var(--text-primary);
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
@@ -242,7 +251,7 @@ body {
     background: var(--card-bg);
     border-radius: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--card-border);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -257,7 +266,7 @@ body {
 }
 
 .vacancy-title {
-    color: var(--tm-gray);
+    color: var(--text-primary);
     margin: 0 0 0.5rem 0;
     font-weight: 600;
 }
@@ -268,7 +277,7 @@ body {
 
 .vacancy-card-body p {
     margin-bottom: 0.75rem;
-    color: var(--tm-gray);
+    color: var(--text-primary);
 }
 
 .vacancy-card-footer {
@@ -276,6 +285,19 @@ body {
     border-top: 1px solid var(--border-color);
     display: flex;
     gap: 0.5rem;
+}
+
+.vacancy-card .meta-info {
+    color: var(--meta-text);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.vacancy-card .description,
+.vacancy-card .responsibilities,
+.vacancy-card .requirements {
+    color: var(--description-text);
+    margin-bottom: 1rem;
 }
 
 /* Skills Tags */
@@ -286,11 +308,12 @@ body {
 }
 
 .skill-tag {
-    background-color: var(--tm-light-gray);
-    color: var(--tm-gray);
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
     padding: 0.25rem 0.75rem;
     border-radius: 15px;
     font-size: 0.875rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Table Styles */
@@ -301,7 +324,7 @@ body {
 }
 
 .table th {
-    color: var(--tm-gray);
+    color: var(--text-primary);
     font-weight: 600;
     border-bottom-width: 1px;
     border-color: var(--table-border);
@@ -370,12 +393,13 @@ body {
 }
 
 .activity-text {
-    color: var(--tm-gray);
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
 .activity-time {
     color: var(--text-secondary);
+    opacity: 0.9;
 }
 
 /* Modal Styles */
@@ -407,6 +431,73 @@ body {
 
 .text-muted {
     color: var(--text-secondary) !important;
+}
+
+/* Candidate Card Styles */
+.candidate-info {
+    color: var(--meta-text);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.candidate-info i {
+    color: var(--meta-text);
+    width: 16px;
+}
+
+.candidate-name {
+    color: var(--text-primary);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Status Badge Styles */
+[data-theme="dark"] .status-badge {
+    opacity: 0.9;
+}
+
+[data-theme="dark"] .status-new {
+    background-color: #1a4a7c;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .status-reviewing {
+    background-color: #735c0f;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .status-interviewed {
+    background-color: #155724;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .status-rejected {
+    background-color: #721c24;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .status-hired {
+    background-color: #155724;
+    color: #ffffff;
+}
+
+[data-theme="dark"] .status-pending {
+    background-color: #735c0f;
+    color: #ffffff;
+}
+
+/* Benefits Tags */
+.benefit-tag {
+    background-color: var(--skill-bg);
+    color: var(--skill-text);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.875rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Responsive Styles */
