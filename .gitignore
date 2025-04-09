@@ -1,1 +1,16 @@
-node_modules
+# Large files
+Template\ presentación\ -\ Tech\ Mahindra.pptx
+
+# General
+.DS_Store
+.env
+.env.local
+node_modules/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
